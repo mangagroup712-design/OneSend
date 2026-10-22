@@ -1,7 +1,7 @@
 const VERSION = "v8";
 const CACHE = `OneSend-${VERSION}`;
 const SHELL = [
-  "/", "/client.html", "/read.html", "/404.html",
+  "/", "/send.html", "/receive.html", "/404.html",
   "/css/main.css",
   "/js/client.js", "/js/read.js", "/js/signal.js", "/js/peer.js", "/js/pwa.js",
   "/manifest.json", "/manifest.webmanifest", "/favicon.ico",
@@ -97,7 +97,7 @@ async function handleSharePost(request) {
     tx.objectStore("payload").put(payload, "latest");
     tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
   });
-  return Response.redirect(new URL("/client.html?share=1", request.url), 303);
+  return Response.redirect(new URL("/send.html?share=1", request.url), 303);
 }
 
 function openShareDb() {
