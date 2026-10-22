@@ -5,8 +5,8 @@
 ## ページ
 
 - `/` - サービス案内
-- `/client.html` - ファイル選択・貼り付け、端末選択、テキスト／URL共有、送信進捗、折り畳み式の速度改善ヒント
-- `/read.html` - 端末名・任意のPIN設定、全画面の受信承認、正確な受信進捗、プレビュー、テキスト履歴、ZIP一括ダウンロード
+- `/client.html` - ファイルの送信
+- `/read.html` - ファイルの受信
 
 ## 使い方
 
@@ -32,12 +32,6 @@ $env:PORT=8081; npm start
 macOS / Linux の場合は `PORT=8081 npm start` を使います。接続の合図（シグナリング）だけこのサーバーが扱い、ファイルはブラウザ間で直接送られます。LAN内の端末から開く場合も、送信側と受信側で同じURL・ポートを使ってください。
 
 PWAのインストールとAndroid Chromeの共有メニュー連携にはHTTPSが必要です。
-
-## Cloudflare へのデプロイ
-
-静的配信だけだとシグナリング API が無いため、`worker.js` を Workers（Assets + Durable Objects）としてデプロイしてください。`wrangler.toml` に転送部屋と端末ディレクトリを設定しています。
-
-Framework presetは `None`、ビルドコマンドは不要です。
 
 ## 転送の仕組みと速度
 
