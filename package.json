@@ -1,0 +1,14 @@
+{
+  "name": "OneSend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Same-network browser file transfer for Cloudflare Pages / local LAN",
+  "scripts": {
+    "start": "node serve.mjs",
+    "dev": "node serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

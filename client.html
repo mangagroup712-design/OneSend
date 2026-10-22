@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>送る — OneSend</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#1678b8" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" />
+    <script type="module" src="/js/client.js"></script>
+  </head>
+  <body><div class="page compact-page"><header class="site-header"><a class="header-brand" href="/">OneSend</a><nav class="header-nav" aria-label="メインメニュー"><a href="/client.html">送る</a><a href="/read.html">受け取る</a></nav></header><main class="hero narrow">
+    <div class="transfer-header"><div><p class="brand small">OneSend</p><h1 class="headline">ファイルを送る</h1></div><a class="back-link" href="/">トップへ</a></div>
+    <p class="lede">受信側の端末を選び、相手の承認後にファイルを送ります。同じネットワーク内の端末同士で直接転送します。</p>
+    <div class="form-shell">
+      <label class="device-name-field">この端末の名前
+        <input id="device-name" class="text-input" type="text" maxlength="32" autocomplete="nickname" aria-label="送信端末の表示名">
+      </label>
+      <label class="drop-zone" id="drop-zone" for="file-input"><strong>ファイルを選択</strong><span>ここへドラッグ＆ドロップもできます</span><span class="hint">複数選択可 / 1ファイル最大2GB</span></label>
+      <input id="file-input" type="file" multiple />
+      <button class="text-entry-toggle" id="open-text-input" type="button">テキストを送信する</button>
+      <div id="text-input-panel" class="text-input-panel hidden"><textarea id="text-message" class="text-input" rows="3" maxlength="10000" placeholder="テキストやURLを入力、または Ctrl+V / Cmd+V で貼り付け"></textarea><button class="secondary" id="add-text-btn" type="button" disabled>テキストを追加</button></div>
+      <div id="file-card" class="file-card hidden">
+        <div id="file-list" class="file-list"></div>
+      </div>
+      <section class="device-picker" aria-labelledby="devices-heading">
+        <div><h2 id="devices-heading">待機中の端末</h2><p class="hint">端末をタップして選択します。長押しすると複数選択できます。</p></div>
+        <div class="device-list" id="device-list" aria-live="polite"><p class="hint">受信端末を検索しています…</p></div>
+        <button class="secondary clear-selection hidden" id="clear-device-selection" type="button">選択解除</button>
+        <button class="primary" id="send-files-btn" type="button" disabled>送信</button>
+        <p id="banner" class="banner hidden" role="status"></p>
+      </section>
+      <div id="transfer-panel" class="hidden">
+        <div class="camera-overlay">
+          <strong id="current-file">接続中</strong>
+          <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+          <p class="progress-label" id="progress-label">0%</p>
+          <p class="speed-label" id="speed-label">送信速度: 計測中</p>
+        </div>
+        <button class="secondary" id="stop-btn" type="button">転送を停止</button>
+        <p class="hint">ファイル本体はサーバーを経由しません。PIN設定中は、安全な端末間接続ができた後にPINを確認します。</p>
+      </div>
+      <details class="speed-guide">
+        <summary id="speed-heading">転送を速くするヒント</summary>
+        <ul>
+          <li>可能なら両方の端末を有線LANにつなぐと、Wi-Fiの混雑を避けられます。</li>
+          <li>Wi-Fiならルーターの近くで、5GHzまたは6GHz帯を使ってください。</li>
+          <li>大きなダウンロードや動画再生を止め、VPNやゲストWi-Fiを避けてください。</li>
+          <li>端末の省電力モードを解除し、送受信画面を前面に開いたままにしてください。</li>
+        </ul>
+        <p class="hint">まだ遅い場合は、端末・ブラウザー、Wi-Fi帯域、表示された速度、ファイル数と容量を教えてください。環境に合わせて改善方法を一緒に絞り込みます。</p>
+      </details>
+    </div>
+    <dialog id="pin-dialog" class="pin-dialog"><form method="dialog" id="pin-form"><h2>受信側のPIN</h2><p>受信側が設定したPINを入力してください。</p><label>PIN<input id="pin-input" class="text-input" type="password" inputmode="numeric" maxlength="32" autocomplete="one-time-code" required></label><div class="dialog-actions"><button class="secondary" id="pin-cancel" value="cancel" type="button">キャンセル</button><button class="primary" value="continue" type="submit">続ける</button></div></form></dialog>
+  </main><footer class="site-footer"><p>OneSend - LANファイル転送</p></footer><script src="/js/pwa.js" defer></script></div></body>
+</html>

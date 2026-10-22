@@ -1,0 +1,16 @@
+{
+  "name": "OneSend ファイル転送",
+  "short_name": "OneSend",
+  "description": "同じネットワーク上のブラウザ同士でファイルを送受信するPWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4faff",
+  "theme_color": "#1678b8",
+  "icons": [{ "src": "/favicon.ico", "sizes": "32x32", "type": "image/x-icon" }],
+  "share_target": {
+    "action": "/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": { "title": "title", "text": "text", "url": "url", "files": [{ "name": "files", "accept": ["image/*", "video/*", "*/*"] }] }
+  }
+}
