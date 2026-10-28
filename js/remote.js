@@ -176,3 +176,11 @@ joinRoomButton?.addEventListener("click", () => {
 startButton?.addEventListener("click", send);
 stopButton.addEventListener("click", closeTransfer);
 window.addEventListener("pagehide", closeTransfer);
+const initialCode = new URLSearchParams(window.location.search).get("code");
+if (initialCode) {
+  setRoomCode(initialCode);
+  if (!sender) {
+    joinRoomButton.disabled = true;
+    receive();
+  }
+}

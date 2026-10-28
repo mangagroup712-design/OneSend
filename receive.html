@@ -24,8 +24,17 @@
           <label id="pin-field" class="device-name-field hidden">PIN<input id="receive-pin" class="text-input" type="password" inputmode="numeric" maxlength="32" autocomplete="new-password"></label>
           <p class="hint">端末名はこのブラウザーで設定します。OSの端末名はブラウザーから取得できません。</p>
         </section>
+        <label class="mode-toggle"><input id="webrtc-mode" type="checkbox"><span>WebRTCモード</span><small>部屋コードで別ネットワークから受け取る</small></label>
         <section class="incoming-section" aria-labelledby="incoming-heading"><h2 id="incoming-heading">接続リクエスト</h2><div id="request-list" class="request-list" aria-live="polite"><p class="hint">接続要求を待っています…</p></div></section>
       </div>
+      <dialog id="webrtc-room-dialog" class="pin-dialog">
+        <form method="dialog" id="webrtc-room-form">
+          <h2>WebRTCモード</h2>
+          <p>送信側から共有された6文字の部屋コードを入力してください。</p>
+          <input id="webrtc-room-code" class="code-input" type="text" inputmode="text" maxlength="6" pattern="[A-Za-z0-9]{6}" autocomplete="off" placeholder="ABC123" required aria-label="部屋コード">
+          <div class="dialog-actions"><button class="secondary" value="cancel" type="submit">キャンセル</button><button class="primary" id="open-webrtc-receive" value="continue" type="submit">受信画面へ</button></div>
+        </form>
+      </dialog>
       <dialog id="approval-dialog" class="approval-dialog"><div class="approval-content"><p class="brand small">受信確認</p><h2 id="approval-title">この送信を受け取りますか？</h2><div id="approval-details"></div><div class="dialog-actions"><button id="reject-approval" class="reject-request" type="button"><span aria-hidden="true">×</span> 拒否</button><button id="accept-approval" class="accept-request" type="button"><span aria-hidden="true">✓</span> 受け取る</button></div></div></dialog>
       <p id="banner" class="banner hidden" role="status"></p>
     </div>

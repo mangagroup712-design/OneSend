@@ -25,6 +25,7 @@
       </div>
       <section class="device-picker" aria-labelledby="devices-heading">
         <div><h2 id="devices-heading">待機中の端末</h2><p class="hint">端末をタップして選択します。長押しすると複数選択できます。</p></div>
+        <label class="mode-toggle"><input id="webrtc-mode" type="checkbox"><span>WebRTCモード</span><small>部屋IDで別ネットワークへ送る</small></label>
         <div class="device-list" id="device-list" aria-live="polite"><p class="hint">受信端末を検索しています…</p></div>
         <button class="secondary clear-selection hidden" id="clear-device-selection" type="button">選択解除</button>
         <button class="primary" id="send-files-btn" type="button" disabled>送信</button>
@@ -51,6 +52,15 @@
         <p class="hint">まだ遅い場合は、端末・ブラウザー、Wi-Fi帯域、表示された速度、ファイル数と容量を教えてください。環境に合わせて改善方法を一緒に絞り込みます。</p>
       </details>
     </div>
+    <dialog id="webrtc-room-dialog" class="pin-dialog">
+      <form method="dialog" id="webrtc-room-form">
+        <h2>WebRTCモード</h2>
+        <p>部屋を作成して表示されたコードを受信側へ共有してください。</p>
+        <button class="primary" id="create-webrtc-room" type="button">部屋を作る</button>
+        <output id="webrtc-room-code" class="room-code-output" aria-live="polite"></output>
+        <div class="dialog-actions"><button class="secondary" value="cancel" type="submit">キャンセル</button><button class="primary" id="open-webrtc-send" value="continue" type="submit" disabled>送信画面へ</button></div>
+      </form>
+    </dialog>
     <dialog id="pin-dialog" class="pin-dialog"><form method="dialog" id="pin-form"><h2>受信側のPIN</h2><p>受信側が設定したPINを入力してください。</p><label>PIN<input id="pin-input" class="text-input" type="password" inputmode="numeric" maxlength="32" autocomplete="one-time-code" required></label><div class="dialog-actions"><button class="secondary" id="pin-cancel" value="cancel" type="button">キャンセル</button><button class="primary" value="continue" type="submit">続ける</button></div></form></dialog>
   </main><footer class="site-footer"><p>OneSend - P2Pファイル転送</p></footer><script src="/js/pwa.js" defer></script></div></body>
 </html>

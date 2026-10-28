@@ -1,4 +1,4 @@
-import { cancelRequest, getRequestStatus, joinRoom, listDevices, openSignal, requestDevice } from "./signal.js";
+import { cancelRequest, createRoom, getRequestStatus, joinRoom, listDevices, openSignal, requestDevice } from "./signal.js";
 import { authorizeSender, connectTransfer, formatSize, formatSpeed, sendFiles, sendText } from "./peer.js";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024;
@@ -25,6 +25,11 @@ const addTextButton = document.getElementById("add-text-btn");
 const openTextInputButton = document.getElementById("open-text-input");
 const textInputPanel = document.getElementById("text-input-panel");
 const pinCancelButton = document.getElementById("pin-cancel");
+const webrtcMode = document.getElementById("webrtc-mode");
+const webrtcRoomDialog = document.getElementById("webrtc-room-dialog");
+const createWebrtcRoom = document.getElementById("create-webrtc-room");
+const webrtcRoomCode = document.getElementById("webrtc-room-code");
+const openWebrtcSend = document.getElementById("open-webrtc-send");
 
 let selectedFiles = [];
 let selectedText = "";
@@ -598,6 +603,31 @@ async function stopTransfer() {
 }
 
 stopButton.addEventListener("click", stopTransfer);
+webrtcMode?.addEventListener("change", () => {
+  if (!webrtcMode.checked) return;
+  webrtcRoomCode.textContent = "";
+  openWebrtcSend.disabled = true;
+  webrtcRoomDialog.showModal();
+});
+createWebrtcRoom?.addEventListener("click", async () => {
+  createWebrtcRoom.disabled = true;
+  try {
+    const { code } = await createRoom();
+    webrtcRoomCode.textContent = code;
+    openWebrtcSend.disabled = false;
+  } catch (error) {
+    showBanner(error.message || "部屋を作成できませんでした。");
+  } finally {
+    createWebrtcRoom.disabled = false;
+  }
+});
+webrtcRoomDialog?.addEventListener("close", () => {
+  if (webrtcRoomDialog.returnValue !== "continue") webrtcMode.checked = false;
+});
+openWebrtcSend?.addEventListener("click", (event) => {
+  event.preventDefault();
+  window.location.href = `/remote-send.html?code=${encodeURIComponent(webrtcRoomCode.textContent)}`;
+});
 window.addEventListener("pagehide", () => active?.stop());
 refreshDevices();
 importSharedPayload();

@@ -29,6 +29,10 @@ const approvalDetails = document.getElementById("approval-details");
 const approvalTitle = document.getElementById("approval-title");
 const acceptApproval = document.getElementById("accept-approval");
 const rejectApproval = document.getElementById("reject-approval");
+const webrtcMode = document.getElementById("webrtc-mode");
+const webrtcRoomDialog = document.getElementById("webrtc-room-dialog");
+const webrtcRoomInput = document.getElementById("webrtc-room-code");
+const openWebrtcReceive = document.getElementById("open-webrtc-receive");
 let shownRequest = null;
 const storageNameKey = "OneSend-device-name";
 const profileIdKey = "OneSend-profile-id";
@@ -394,6 +398,26 @@ function appendTextHistory(text, createdAt, title = "テキスト") {
 }
 acceptApproval.addEventListener("click", () => { if (shownRequest) answerRequest(shownRequest, true); });
 rejectApproval.addEventListener("click", () => { if (shownRequest) answerRequest(shownRequest, false); });
+webrtcRoomInput?.addEventListener("input", () => {
+  webrtcRoomInput.value = webrtcRoomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  webrtcRoomInput.setCustomValidity("");
+});
+webrtcMode?.addEventListener("change", () => {
+  if (webrtcMode.checked) webrtcRoomDialog.showModal();
+});
+webrtcRoomDialog?.addEventListener("close", () => {
+  if (webrtcRoomDialog.returnValue !== "continue") webrtcMode.checked = false;
+});
+openWebrtcReceive?.addEventListener("click", (event) => {
+  event.preventDefault();
+  const code = webrtcRoomInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!/^[A-Z0-9]{6}$/.test(code)) {
+    webrtcRoomInput.setCustomValidity("6文字の部屋コードを入力してください。");
+    webrtcRoomInput.reportValidity();
+    return;
+  }
+  window.location.href = `/remote-receive.html?code=${encodeURIComponent(code)}`;
+});
 
 async function startReceiver() {
   await stopSession();
