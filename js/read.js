@@ -403,25 +403,28 @@ function appendTextHistory(text, createdAt, title = "テキスト") {
 acceptApproval.addEventListener("click", () => { if (shownRequest) answerRequest(shownRequest, true); });
 rejectApproval.addEventListener("click", () => { if (shownRequest) answerRequest(shownRequest, false); });
 webrtcRoomInput?.addEventListener("input", () => {
-  webrtcRoomInput.value = webrtcRoomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  webrtcRoomInput.value = webrtcRoomInput.value.replace(/\D/g, "").slice(0, 6);
   webrtcRoomInput.setCustomValidity("");
-  showWebrtcQr.disabled = !/^[A-Z0-9]{6}$/.test(webrtcRoomInput.value);
+  showWebrtcQr.disabled = !/^\d{6}$/.test(webrtcRoomInput.value);
 });
-webrtcMode?.addEventListener("change", () => {
+webrtcMode?.addEventListener("change", async () => {
   webrtcPanel.classList.toggle("hidden", !webrtcMode.checked);
-  if (!webrtcMode.checked) webrtcRoomInput.value = "";
+  if (!webrtcMode.checked) {
+    webrtcRoomInput.value = "";
+    if (active?.available) await stopSession();
+  }
 });
 openWebrtcReceive?.addEventListener("click", (event) => {
-  const code = webrtcRoomInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (!/^[A-Z0-9]{6}$/.test(code)) {
+  const code = webrtcRoomInput.value.trim();
+  if (!/^\d{6}$/.test(code)) {
     webrtcRoomInput.setCustomValidity("6文字の部屋コードを入力してください。");
     webrtcRoomInput.reportValidity();
     return;
   }
-  window.location.href = `/remote-receive.html?code=${encodeURIComponent(code)}`;
+  startWebrtcReceiver(code);
 });
 showWebrtcQr?.addEventListener("click", () => {
-  const url = new URL(`/remote-receive.html?code=${encodeURIComponent(webrtcRoomInput.value)}`, window.location.origin).href;
+  const url = new URL(`/receive.html?webrtc=1&code=${encodeURIComponent(webrtcRoomInput.value)}`, window.location.origin).href;
   if (!globalThis.QRCode?.toCanvas) {
     showBanner("QRコード機能を読み込めませんでした。");
     return;
@@ -435,6 +438,74 @@ showWebrtcQr?.addEventListener("click", () => {
     qrDialog.showModal();
   });
 });
+
+async function startWebrtcReceiver(code) {
+  if (active) await stopSession();
+  resetResults();
+  pairing.classList.add("hidden");
+  currentFile.textContent = "WebRTC接続を待っています…";
+  const signal = openSignal(code, "receiver");
+  const session = {
+    id: deviceId,
+    code,
+    signal,
+    available: false,
+    accepting: true,
+    pc: null,
+    channel: null,
+    heartbeat: null,
+    poller: null,
+    stopping: false,
+  };
+  session.stop = async () => {
+    session.channel?.close();
+    session.pc?.close();
+    await signal.close();
+  };
+  active = session;
+  try {
+    await joinRoom(code, "receiver");
+    const connected = await connectTransfer({
+      isOfferer: false,
+      sendSignal: (payload) => signal.send(payload),
+      subscribe: (listener) => signal.subscribe(listener),
+    });
+    session.pc = connected.pc;
+    session.channel = connected.channel;
+    await authorizeReceiver(session.channel, code);
+    currentFile.textContent = "接続しました。ファイルを待っています";
+    showBanner("WebRTC接続が完了しました。", "ok");
+    receiveFiles(session.channel, {
+      onBatch(files, totalBytes) {
+        currentFile.textContent = `${files.length}個のファイルを受信します（${formatSize(totalBytes)}）`;
+      },
+      onFileStart(file) {
+        currentFile.textContent = `受信中: ${file.name}`;
+      },
+      onProgress(progress) {
+        updateProgress(progress);
+      },
+      onFile(blob, meta) {
+        appendPreview(blob, meta);
+      },
+      onText(text, createdAt, title) {
+        appendTextHistory(text, createdAt, title);
+        currentFile.textContent = "テキストを受信しました";
+      },
+      onComplete() {
+        currentFile.textContent = "すべてのファイルを受信しました";
+        showBanner("WebRTCで受信が完了しました。", "ok");
+      },
+      onError(error) {
+        if (!session.stopping) showBanner(error.message || "WebRTC受信に失敗しました。");
+      },
+    });
+  } catch (error) {
+    await stopSession();
+    showBanner(error.message || "WebRTC接続に失敗しました。");
+    currentFile.textContent = "接続できませんでした";
+  }
+}
 
 async function startReceiver() {
   await stopSession();
@@ -486,7 +557,15 @@ zipDownloadButton.addEventListener("click", downloadZip);
 againButton.addEventListener("click", startReceiver);
 window.addEventListener("pagehide", () => stopSession());
 
-if (document.readyState === "loading") {
+const initialWebrtcCode = new URLSearchParams(location.search).get("code") || "";
+if (initialWebrtcCode && /^\d{6}$/.test(initialWebrtcCode)) {
+  webrtcMode.checked = true;
+  webrtcPanel.classList.remove("hidden");
+  webrtcRoomInput.value = initialWebrtcCode;
+  showWebrtcQr.disabled = false;
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => startWebrtcReceiver(initialWebrtcCode), { once: true });
+  else startWebrtcReceiver(initialWebrtcCode);
+} else if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", startReceiver, { once: true });
 } else {
   startReceiver();

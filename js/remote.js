@@ -58,8 +58,8 @@ function renderFiles() {
 }
 
 function setRoomCode(value) {
-  roomCode.value = String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-  if (startButton) startButton.disabled = files.length === 0 || !/^[A-Z0-9]{6}$/.test(roomCode.value);
+  roomCode.value = String(value || "").replace(/\D/g, "").slice(0, 6);
+  if (startButton) startButton.disabled = files.length === 0 || !/^\d{6}$/.test(roomCode.value);
 }
 
 async function closeTransfer() {
@@ -166,7 +166,7 @@ createRoomButton?.addEventListener("click", async () => {
 });
 joinRoomButton?.addEventListener("click", () => {
   setRoomCode(roomCode.value);
-  if (!/^[A-Z0-9]{6}$/.test(roomCode.value)) {
+  if (!/^\d{6}$/.test(roomCode.value)) {
     showBanner("6文字の部屋IDを入力してください。");
     return;
   }

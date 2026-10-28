@@ -3,7 +3,7 @@
  * between different networks when ICE can establish a direct route.
  */
 
-const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const CODE_CHARS = "0123456789";
 const ROOM_TTL_MS = 15 * 60 * 1000;
 const POLL_MS = 15_000;
 const MAX_PAYLOAD = 32 * 1024;
@@ -229,7 +229,7 @@ async function handleDirectory(request, url, storage) {
     const profileId = String(body.profileId || "");
     const code = String(body.code || "").toUpperCase();
     const secret = String(body.secret || "");
-    if (!/^[A-Z0-9_-]{8,80}$/i.test(id) || !/^[a-f0-9]{32,128}$/i.test(profileId) || !/^[A-Z0-9]{6}$/i.test(code) || !/^[a-f0-9]{32,128}$/i.test(secret)) {
+    if (!/^[A-Z0-9_-]{8,80}$/i.test(id) || !/^[a-f0-9]{32,128}$/i.test(profileId) || !/^\d{6}$/.test(code) || !/^[a-f0-9]{32,128}$/i.test(secret)) {
       return json({ error: "端末情報が不正です" }, 400);
     }
     const prior = records[id];
@@ -401,7 +401,7 @@ async function route(request, env) {
     return json({ error: "部屋を作れませんでした" }, 500);
   }
 
-  const match = url.pathname.match(/^\/api\/rooms\/([A-Z0-9]{6})(?:\/(join|signal|poll))?$/i);
+  const match = url.pathname.match(/^\/api\/rooms\/(\d{6})(?:\/(join|signal|poll))?$/);
   if (!match) return json({ error: "not found" }, 404);
   const code = match[1].toUpperCase();
 

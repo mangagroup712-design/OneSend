@@ -274,7 +274,8 @@ function updateProgress(progress) {
 
 function updateSelectionUI() {
   const hasContent = selectedFiles.length > 0 || Boolean(selectedText);
-  sendFilesButton.disabled = sendingBatch || selectedDevices.length === 0 || !hasContent;
+  const webrtcReady = webrtcMode?.checked && /^\d{6}$/.test(webrtcRoomCode?.value || "");
+  sendFilesButton.disabled = sendingBatch || (!webrtcReady && selectedDevices.length === 0) || !hasContent;
   clearSelectionButton.disabled = sendingBatch;
   if (!selectedDevices.length) sendFilesButton.textContent = "送信";
   else if (selectedDevices.length === 1) sendFilesButton.textContent = `${selectedDevices[0].name}に送信`;
@@ -538,7 +539,66 @@ async function requestTransfer(device, button) {
   return true;
 }
 
+async function sendWebrtcTransfer() {
+  if (active || !selectedFiles.length && !selectedText) {
+    if (!selectedFiles.length && !selectedText) showBanner("先に送信するファイルまたはテキストを選択してください。");
+    return;
+  }
+  const code = webrtcRoomCode.value;
+  if (!/^\d{6}$/.test(code)) {
+    showBanner("6桁の部屋番号を入力または発行してください。");
+    return;
+  }
+  const filesSnapshot = [...selectedFiles];
+  const textSnapshot = selectedText;
+  const textTitleSnapshot = selectedTextTitle;
+  panel.classList.remove("hidden");
+  dropZone.classList.add("hidden");
+  fileCard.classList.add("hidden");
+  currentFile.textContent = "WebRTC接続を準備しています…";
+  const session = { cancelled: false, signal: null, pc: null, channel: null };
+  active = {
+    stop: async () => {
+      session.cancelled = true;
+      session.channel?.close();
+      session.pc?.close();
+      await session.signal?.close();
+    },
+  };
+  try {
+    session.signal = openSignal(code, "sender");
+    await joinRoom(code, "sender");
+    const connected = await connectTransfer({
+      isOfferer: true,
+      sendSignal: (payload) => session.signal.send(payload),
+      subscribe: (listener) => session.signal.subscribe(listener),
+    });
+    session.pc = connected.pc;
+    session.channel = connected.channel;
+    await authorizeSender(session.channel, code);
+    if (filesSnapshot.length) await sendFiles(session.channel, filesSnapshot, (progress) => {
+      currentFile.textContent = progress.fileName ? `送信中: ${progress.fileName}` : "転送中";
+      updateProgress(progress);
+    }, connected.maxMessageSize);
+    if (textSnapshot) await sendText(session.channel, textSnapshot, textTitleSnapshot);
+    currentFile.textContent = "送信が完了しました";
+    showBanner("WebRTCで送信が完了しました。", "ok");
+  } catch (error) {
+    if (!session.cancelled) showBanner(error.message || "WebRTC転送に失敗しました。");
+  } finally {
+    await active?.stop();
+    active = null;
+    panel.classList.add("hidden");
+    dropZone.classList.remove("hidden");
+    fileCard.classList.toggle("hidden", selectedFiles.length === 0 && !selectedText);
+  }
+}
+
 sendFilesButton.addEventListener("click", async () => {
+  if (webrtcMode?.checked) {
+    await sendWebrtcTransfer();
+    return;
+  }
   if (sendingBatch || !selectedDevices.length) return;
   sendingBatch = true;
   cancelBatch = false;
@@ -614,6 +674,7 @@ webrtcMode?.addEventListener("change", () => {
     showWebrtcQr.disabled = true;
     openWebrtcSend.disabled = true;
   }
+  updateSelectionUI();
 });
 createWebrtcRoom?.addEventListener("click", async () => {
   createWebrtcRoom.disabled = true;
@@ -622,6 +683,7 @@ createWebrtcRoom?.addEventListener("click", async () => {
     webrtcRoomCode.value = code;
     showWebrtcQr.disabled = false;
     openWebrtcSend.disabled = false;
+    updateSelectionUI();
   } catch (error) {
     showBanner(error.message || "部屋を作成できませんでした。");
   } finally {
@@ -629,16 +691,17 @@ createWebrtcRoom?.addEventListener("click", async () => {
   }
 });
 webrtcRoomCode?.addEventListener("input", () => {
-  webrtcRoomCode.value = webrtcRoomCode.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-  const valid = /^[A-Z0-9]{6}$/.test(webrtcRoomCode.value);
+  webrtcRoomCode.value = webrtcRoomCode.value.replace(/\D/g, "").slice(0, 6);
+  const valid = /^\d{6}$/.test(webrtcRoomCode.value);
   showWebrtcQr.disabled = !valid;
   openWebrtcSend.disabled = !valid;
+  updateSelectionUI();
 });
 openWebrtcSend?.addEventListener("click", (event) => {
-  window.location.href = `/remote-send.html?code=${encodeURIComponent(webrtcRoomCode.value)}`;
+  sendWebrtcTransfer();
 });
 showWebrtcQr?.addEventListener("click", () => {
-  const url = new URL(`/remote-receive.html?code=${encodeURIComponent(webrtcRoomCode.value)}`, window.location.origin).href;
+  const url = new URL(`/receive.html?webrtc=1&code=${encodeURIComponent(webrtcRoomCode.value)}`, window.location.origin).href;
   if (!globalThis.QRCode?.toCanvas) {
     showBanner("QRコード機能を読み込めませんでした。");
     return;
