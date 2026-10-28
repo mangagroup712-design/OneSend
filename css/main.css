@@ -56,6 +56,12 @@ main.hero.narrow, main.hero.reader-shell { padding-top: 2rem; }
 .mono { font-family: ui-monospace, "Cascadia Code", monospace; font-size: .95em; }
 .form-shell { width: 100%; max-width: var(--content-width); display: grid; gap: .9rem; animation: rise .9s .12s ease both; }
 .home-actions { grid-template-columns: 1fr 1fr; }
+.remote-link { font-size: .92rem; }
+.room-card { display: grid; gap: .7rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: .85rem; background: color-mix(in srgb, white 52%, transparent); }
+.room-card h2 { margin: 0; color: var(--moss); font-size: 1rem; }
+.room-actions { display: flex; gap: .6rem; align-items: center; }
+.room-actions .text-input { min-width: 0; flex: 1; }
+.room-actions .primary { flex: 0 0 auto; }
 .primary-link, .secondary-link { border-radius: .85rem; padding: 1rem 1.25rem; text-decoration: none; font-weight: 600; transition: transform .15s ease, background .2s ease; }
 .primary-link { background: var(--ink); color: var(--lime); }
 .secondary-link { background: color-mix(in srgb, white 70%, transparent); color: var(--ink); border: 1.5px solid color-mix(in srgb, var(--ink) 16%, transparent); }
@@ -225,4 +231,3 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
-

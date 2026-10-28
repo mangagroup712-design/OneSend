@@ -11,7 +11,7 @@
   </head>
   <body><div class="page compact-page"><header class="site-header"><a class="header-brand" href="/">OneSend</a><nav class="header-nav" aria-label="メインメニュー"><a href="/send.html">送る</a><a href="/receive.html">受け取る</a></nav></header><main class="hero narrow">
     <div class="transfer-header"><div><p class="brand small">OneSend</p><h1 class="headline">ファイルを送る</h1></div><a class="back-link" href="/">トップへ</a></div>
-    <p class="lede">受信側の端末を選び、相手の承認後にファイルを送ります。同じネットワーク内の端末同士で直接転送します。</p>
+    <p class="lede">受信側の端末を選び、相手の承認後にファイルを送ります。別ネットワークへ送る場合も、ファイル本体はWebRTCで端末間に直接転送します。</p>
     <div class="form-shell">
       <label class="device-name-field">この端末の名前
         <input id="device-name" class="text-input" type="text" maxlength="32" autocomplete="nickname" aria-label="送信端末の表示名">
@@ -52,5 +52,5 @@
       </details>
     </div>
     <dialog id="pin-dialog" class="pin-dialog"><form method="dialog" id="pin-form"><h2>受信側のPIN</h2><p>受信側が設定したPINを入力してください。</p><label>PIN<input id="pin-input" class="text-input" type="password" inputmode="numeric" maxlength="32" autocomplete="one-time-code" required></label><div class="dialog-actions"><button class="secondary" id="pin-cancel" value="cancel" type="button">キャンセル</button><button class="primary" value="continue" type="submit">続ける</button></div></form></dialog>
-  </main><footer class="site-footer"><p>OneSend - LANファイル転送</p></footer><script src="/js/pwa.js" defer></script></div></body>
+  </main><footer class="site-footer"><p>OneSend - P2Pファイル転送</p></footer><script src="/js/pwa.js" defer></script></div></body>
 </html>

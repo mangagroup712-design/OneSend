@@ -1,4 +1,6 @@
-const CHUNK_SIZE = 256 * 1024;
+// Keep each SCTP message at the requested 64 KiB maximum. The send queue is
+// bounded separately below so large files never have to be loaded in memory.
+const CHUNK_SIZE = 64 * 1024;
 // Keep a small, bounded amount queued. Browser implementations have different
 // hard limits and can reject a send even when a large fixed threshold is used.
 const SEND_QUEUE_LIMIT = 4 * 1024 * 1024;
@@ -6,7 +8,6 @@ const ACK_EVERY = 1024 * 1024;
 const CONNECT_TIMEOUT_MS = 25_000;
 
 const ICE_SERVERS = [
-  { urls: "stun:stun.cloudflare.com:3478" },
   { urls: "stun:stun.l.google.com:19302" },
 ];
 
@@ -212,7 +213,8 @@ function waitForChannelMessage(channel, predicate) {
 export async function sendFiles(channel, files, onProgress, maxMessageSize = 64 * 1024) {
   await waitForChannel(channel);
   channel.binaryType = "arraybuffer";
-  const chunkSize = Math.max(1, Math.min(CHUNK_SIZE, Number(maxMessageSize) || 64 * 1024));
+  const peerMessageLimit = Number(maxMessageSize) > 0 ? Number(maxMessageSize) : CHUNK_SIZE;
+  const chunkSize = Math.max(1, Math.min(CHUNK_SIZE, peerMessageLimit));
   const fileMeta = files.map((file) => ({
     name: file.name.slice(0, 255),
     mime: (file.type || "application/octet-stream").slice(0, 128),

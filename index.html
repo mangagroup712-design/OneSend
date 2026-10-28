@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OneSend — 同じネットでファイル転送</title>
-    <meta name="description" content="サーバーにファイルを預けず、同じネットワーク上のブラウザ同士で直接ファイルを送受信します。" />
+    <meta name="description" content="サーバーにファイルを預けず、WebRTCでブラウザ同士が直接ファイルを送受信します。" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#1678b8" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
@@ -19,18 +19,20 @@
       <main class="hero">
         <p class="brand">OneSend</p>
         <h1 class="headline">ファイルを、ネットですぐ渡す。</h1>
-        <p class="lede">サーバーにアップロードせず、ブラウザからブラウザへ。<br>同じWi-Fi上で、大きなファイルもそのまま送れます。</p>
+        <p class="lede">サーバーにアップロードせず、ブラウザからブラウザへ。<br>同じWi-Fiでも、別ネットワーク間でも、大きなファイルを直接送れます。</p>
         <div class="form-shell home-actions">
           <a class="primary-link" href="/send.html">ファイルを送る <span>→</span></a>
           <a class="secondary-link" href="/receive.html">受け取る <span>↗</span></a>
+          <a class="secondary-link remote-link" href="/remote-send.html">別ネットワークへ送る <span>→</span></a>
+          <a class="secondary-link remote-link" href="/remote-receive.html">部屋IDで受け取る <span>↗</span></a>
           <div class="feature-grid">
-            <div><strong>直接転送</strong><span>ファイルの中身はLAN上で完結するため、サーバーに保存されません</span></div>
+            <div><strong>直接転送</strong><span>ファイルの中身はWebRTCで端末間を流れるため、シグナリングサーバーに保存されません</span></div>
             <div><strong>受信前に承認</strong><span>受信側が接続を確認。必要ならPINも設定できます</span></div>
             <div><strong>端末間で直接転送</strong><span>大きなファイルもブラウザー間で送れます（最大2GB）</span></div>
           </div>
         </div>
       </main>
-      <footer class="site-footer"><p>OneSend - LANファイル転送</p></footer><script src="/js/pwa.js" defer></script>
+      <footer class="site-footer"><p>OneSend - P2Pファイル転送</p></footer><script src="/js/pwa.js" defer></script>
     </div>
   </body>
 </html>

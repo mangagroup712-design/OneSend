@@ -1,5 +1,6 @@
 /**
- * Signaling only. File bytes travel peer-to-peer over WebRTC on the LAN.
+ * Signaling only. File bytes travel peer-to-peer over WebRTC, including
+ * between different networks when ICE can establish a direct route.
  */
 
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -253,7 +254,7 @@ async function handleDirectory(request, url, storage) {
 
   const device = records[deviceId];
   if (!device || device.networkKey !== networkKey(request)) {
-    return json({ error: "受信端末が同じネットワークにいないか、オフラインです" }, 404);
+    return json({ error: "受信端末がオフラインか、接続可能な部屋がありません" }, 404);
   }
   const authorization = request.headers.get("authorization") || "";
   const receiverAuthorized = authorization === `Bearer ${device.secret}`;

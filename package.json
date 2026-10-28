@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Same-network browser file transfer for Cloudflare Pages / local LAN",
+  "description": "WebRTC browser-to-browser file transfer for Cloudflare Pages / Node.js",
   "scripts": {
     "start": "node serve.mjs",
     "dev": "node serve.mjs"

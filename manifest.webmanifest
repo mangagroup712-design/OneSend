@@ -1,7 +1,7 @@
 {
   "name": "OneSend ファイル転送",
   "short_name": "OneSend",
-  "description": "同じネットワーク上のブラウザ同士でファイルを送受信するPWA",
+  "description": "WebRTCでファイルを直接送受信するPWA",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f4faff",
