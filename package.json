@@ -1,0 +1,14 @@
+{
+  "name": "OneSend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "WebRTC browser-to-browser file transfer for Cloudflare Pages / Node.js",
+  "scripts": {
+    "start": "node serve.mjs",
+    "dev": "node serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

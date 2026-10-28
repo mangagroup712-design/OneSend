@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>別ネットワークから受け取る — OneSend</title>
+    <link rel="stylesheet" href="/css/main.css" />
+    <script type="module" src="/js/remote.js"></script>
+  </head>
+  <body data-remote-role="receiver">
+    <div class="page compact-page">
+      <header class="site-header"><a class="header-brand" href="/">OneSend</a><nav class="header-nav"><a href="/remote-send.html">送る</a></nav></header>
+      <main class="hero narrow">
+        <div class="transfer-header"><div><p class="brand small">OneSend</p><h1 class="headline">別ネットワークから受け取る</h1></div><a class="back-link" href="/">トップへ</a></div>
+        <p class="lede">送信側から共有された部屋IDを入力して参加します。ファイル本体はこの端末へ直接転送されます。</p>
+        <div class="form-shell">
+          <section class="room-card">
+            <h2>部屋ID</h2>
+            <div class="room-actions"><input id="room-code" class="text-input mono" inputmode="text" maxlength="6" placeholder="6文字のコード" aria-label="部屋ID"><button class="primary" id="join-room" type="button">部屋に参加</button></div>
+            <p id="room-status" class="hint">送信側から受け取った6文字のコードを入力してください。</p>
+          </section>
+          <button class="secondary" id="stop-transfer" type="button" disabled>停止</button>
+          <div class="camera-overlay"><strong id="current-file">待機中</strong><div class="progress"><div class="progress-bar" id="progress-bar"></div></div><p class="progress-label" id="progress-label">0%</p><p class="speed-label" id="speed-label">受信速度: 待機中</p></div>
+          <div id="received-files" class="file-card hidden"></div>
+          <p id="banner" class="banner hidden" role="status"></p>
+        </div>
+      </main>
+      <footer class="site-footer"><p>OneSend - P2Pファイル転送</p></footer>
+    </div>
+  </body>
+</html>

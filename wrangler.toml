@@ -1,0 +1,23 @@
+name = "OneSend"
+main = "worker.js"
+compatibility_date = "2024-10-01"
+
+[assets]
+directory = "."
+binding = "ASSETS"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "TransferRoom"
+
+[[durable_objects.bindings]]
+name = "DEVICES"
+class_name = "DeviceDirectory"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TransferRoom"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["DeviceDirectory"]
