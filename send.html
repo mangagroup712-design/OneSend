@@ -11,7 +11,7 @@
     <script src="/js/qrcode-adapter.js"></script>
     <script type="module" src="/js/client.js"></script>
   </head>
-  <body><div class="page compact-page"><header class="site-header"><a class="header-brand" href="/">OneSend</a><nav class="header-nav" aria-label="メインメニュー"><a href="/send.html">送る</a><a href="/receive.html">受け取る</a></nav></header><main class="hero narrow">
+  <body><div class="page compact-page send-page"><header class="site-header"><a class="header-brand" href="/">OneSend</a><nav class="header-nav" aria-label="メインメニュー"><a href="/send.html">送る</a><a href="/receive.html">受け取る</a></nav></header><main class="hero narrow">
     <div class="transfer-header"><div><p class="brand small">OneSend</p><h1 class="headline">ファイルを送る</h1></div><a class="back-link" href="/">トップへ</a></div>
     <p class="lede">受信側の端末を選び、相手の承認後にファイルを送ります。別ネットワークへ送る場合も、ファイル本体はWebRTCで端末間に直接転送します。</p>
     <div class="form-shell">
@@ -28,7 +28,8 @@
       <label class="mode-toggle"><input id="webrtc-mode" type="checkbox"><span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span class="mode-label">WebRTCモード</span><small>部屋IDで別ネットワークへ送る</small></label>
       <section id="webrtc-panel" class="webrtc-panel hidden" aria-labelledby="webrtc-heading">
         <h2 id="webrtc-heading">WebRTC接続</h2>
-        <div class="room-input-row"><input id="webrtc-room-code" class="code-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="部屋コード"><button class="secondary" id="create-webrtc-room" type="button">部屋を作る</button></div>
+        <div class="room-code-focus"><input id="webrtc-room-code" class="code-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="部屋コード"></div>
+        <button class="secondary room-create-button" id="create-webrtc-room" type="button">部屋を作る</button>
         <div class="room-panel-actions"><button class="secondary" id="show-webrtc-qr" type="button" disabled>ペアリングQRを表示</button><button class="primary" id="open-webrtc-send" type="button" disabled>WebRTCで送信</button></div>
         <p class="hint">部屋コードを受信側へ共有するか、QRコードを読み取ってもらってください。</p>
       </section>

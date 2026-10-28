@@ -118,15 +118,25 @@ input[type="file"] { display: none; }
 .mode-toggle small { color: color-mix(in srgb, var(--ink) 58%, transparent); font-size: .78rem; font-weight: 400; }
 .webrtc-panel { display: grid; gap: .8rem; width: 100%; box-sizing: border-box; padding: clamp(1.15rem, 3vw, 1.6rem); border: 1px solid color-mix(in srgb, var(--leaf) 28%, transparent); border-radius: 1.1rem; background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--lime) 34%, white), transparent 62%), color-mix(in srgb, white 66%, transparent); box-shadow: 0 16px 38px rgba(17, 49, 74, .1); animation: webrtc-panel-enter .38s cubic-bezier(.2,.8,.2,1) both; }
 .webrtc-panel h2 { margin: 0; color: var(--moss); font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; text-align: left; }
-.room-input-row, .room-panel-actions { display: flex; gap: .6rem; align-items: stretch; flex-wrap: wrap; width: 100%; }
-.room-input-row .code-input { flex: 1 1 12rem; min-width: 0; }
-.room-input-row button, .room-panel-actions button { flex: 1 1 10rem; min-height: 3rem; }
+.room-panel-actions { display: flex; gap: .6rem; align-items: stretch; flex-wrap: wrap; width: 100%; }
+.room-panel-actions button { flex: 1 1 100%; min-height: 3rem; }
 .webrtc-panel .code-input { width: 100%; box-sizing: border-box; border: 0; border-bottom: 2px solid color-mix(in srgb, var(--leaf) 42%, transparent); border-radius: .35rem; background: transparent; color: var(--ink); font-family: "Fraunces", Georgia, serif; font-size: clamp(2.5rem, 10vw, 4.2rem); font-weight: 600; letter-spacing: .18em; line-height: 1.15; text-align: center; }
 .webrtc-panel .code-input:focus { outline: none; border-color: var(--leaf); box-shadow: 0 8px 0 -6px var(--leaf); }
 .room-code-focus { display: grid; place-items: center; width: 100%; }
 .room-code-focus .code-input { max-width: 22rem; }
-.room-connect-button, .webrtc-panel > .primary { width: 100%; min-height: 3.2rem; }
+.room-create-button, .room-connect-button, .webrtc-panel > .primary { width: 100%; min-height: 3.2rem; }
 .webrtc-panel > .secondary { width: 100%; min-height: 2.8rem; }
+/* ===== WebRTCパネル共通ボタン(send.html / receive.html を同じデザインに統一) ===== */
+/* すべてのボタンを横幅いっぱいにする(囲み要素やクラスの違いに左右されない) */
+.webrtc-panel button { width: 100%; box-sizing: border-box; }
+/* メインボタン(濃い色)は高さ 3.2rem、サブボタン(QR表示など)は 2.8rem に揃える */
+.webrtc-panel .primary { min-height: 3.2rem; }
+.webrtc-panel .secondary, .webrtc-panel .btn-secondary { min-height: 2.8rem; }
+/* 送信画面の「部屋を作る」を、受信画面の「部屋に接続」と同じ濃い色のメインボタンにする */
+.send-page .webrtc-panel button:not(#open-webrtc-send):not(#show-webrtc-qr) { background: var(--ink); color: var(--lime); border: 0; min-height: 3.2rem; }
+/* ボタンの並び順を「メイン → QR表示」に統一(受信画面と同じ。横向き表示と同じ順番) */
+.send-page .webrtc-panel #open-webrtc-send { order: 0; }
+.send-page .webrtc-panel #show-webrtc-qr { order: 1; }
 .qr-canvas { display: block; width: min(240px, 100%); height: auto; margin: .4rem auto 0; }
 .qr-url { overflow-wrap: anywhere; color: var(--moss); font-size: .75rem; text-align: center; }
 .webrtc-peer-panel { display: flex; align-items: center; gap: .75rem; width: 100%; box-sizing: border-box; padding: .9rem 1rem; border: 1px solid color-mix(in srgb, var(--leaf) 24%, transparent); border-radius: .9rem; background: color-mix(in srgb, white 70%, transparent); animation: webrtc-panel-enter .35s ease both; }
@@ -253,6 +263,30 @@ button:disabled { opacity: .45; cursor: not-allowed; }
   .compact-page .site-header { padding-top: .65rem; }
   .compact-page .site-footer { padding-bottom: .35rem; }
   .text-input-panel { grid-template-columns: 1fr; }
+}
+@media (orientation: landscape) {
+  .send-page .webrtc-panel {
+    justify-items: stretch;
+    gap: .85rem;
+    padding: clamp(1.1rem, 3vw, 1.6rem);
+  }
+  .send-page .room-panel-actions button {
+    width: 100%;
+    flex: none;
+  }
+  .send-page .room-panel-actions {
+    display: flex;
+    flex-direction: column;
+  }
+  .send-page .room-panel-actions #open-webrtc-send {
+    order: 0;
+  }
+  .send-page .room-panel-actions #show-webrtc-qr {
+    order: 1;
+  }
+  .send-page .webrtc-panel > .hint {
+    margin: .1rem 0 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
