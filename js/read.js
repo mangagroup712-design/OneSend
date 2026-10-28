@@ -24,6 +24,7 @@ const pinRequiredInput = document.getElementById("pin-required");
 const pinField = document.getElementById("pin-field");
 const receivePinInput = document.getElementById("receive-pin");
 const requestList = document.getElementById("request-list");
+const incomingSection = document.querySelector(".incoming-section");
 const approvalDialog = document.getElementById("approval-dialog");
 const approvalDetails = document.getElementById("approval-details");
 const approvalTitle = document.getElementById("approval-title");
@@ -33,6 +34,8 @@ const webrtcMode = document.getElementById("webrtc-mode");
 const webrtcPanel = document.getElementById("webrtc-panel");
 const webrtcRoomInput = document.getElementById("webrtc-room-code");
 const openWebrtcReceive = document.getElementById("open-webrtc-receive");
+const webrtcPeerPanel = document.getElementById("webrtc-peer-panel");
+const webrtcPeerName = document.getElementById("webrtc-peer-name");
 const showWebrtcQr = document.getElementById("show-webrtc-qr");
 const qrDialog = document.getElementById("qr-dialog");
 const qrCanvas = document.getElementById("qr-canvas");
@@ -409,6 +412,7 @@ webrtcRoomInput?.addEventListener("input", () => {
 });
 webrtcMode?.addEventListener("change", async () => {
   webrtcPanel.classList.toggle("hidden", !webrtcMode.checked);
+  incomingSection?.classList.toggle("hidden", webrtcMode.checked);
   if (!webrtcMode.checked) {
     webrtcRoomInput.value = "";
     if (active?.available) await stopSession();
@@ -438,6 +442,30 @@ showWebrtcQr?.addEventListener("click", () => {
     qrDialog.showModal();
   });
 });
+
+function promptWebrtcApproval(request) {
+  approvalTitle.textContent = "この送信を受け取りますか？";
+  approvalDetails.replaceChildren();
+  const sender = document.createElement("p");
+  sender.className = "request-name";
+  sender.textContent = `${request.senderName || "送信端末"}からのWebRTC接続`;
+  const summary = document.createElement("p");
+  summary.textContent = "接続を承認すると、ファイルがこの端末へ直接転送されます。";
+  approvalDetails.append(sender, summary);
+  approvalDialog.showModal();
+  return new Promise((resolve) => {
+    const accept = () => finish(true);
+    const reject = () => finish(false);
+    const finish = (value) => {
+      acceptApproval.removeEventListener("click", accept);
+      rejectApproval.removeEventListener("click", reject);
+      if (approvalDialog.open) approvalDialog.close();
+      resolve(value);
+    };
+    acceptApproval.addEventListener("click", accept);
+    rejectApproval.addEventListener("click", reject);
+  });
+}
 
 async function startWebrtcReceiver(code) {
   if (active) await stopSession();
@@ -472,7 +500,11 @@ async function startWebrtcReceiver(code) {
     });
     session.pc = connected.pc;
     session.channel = connected.channel;
-    await authorizeReceiver(session.channel, code);
+    const auth = await authorizeReceiver(session.channel, pinRequiredInput.checked ? receivePinInput.value : "", deviceNameInput.value, {
+      onRequest: (request) => promptWebrtcApproval(request),
+    });
+    webrtcPeerName.textContent = auth.peerName || "送信端末";
+    webrtcPeerPanel.classList.remove("hidden");
     currentFile.textContent = "接続しました。ファイルを待っています";
     showBanner("WebRTC接続が完了しました。", "ok");
     receiveFiles(session.channel, {
@@ -561,8 +593,10 @@ const initialWebrtcCode = new URLSearchParams(location.search).get("code") || ""
 if (initialWebrtcCode && /^\d{6}$/.test(initialWebrtcCode)) {
   webrtcMode.checked = true;
   webrtcPanel.classList.remove("hidden");
+  incomingSection?.classList.add("hidden");
   webrtcRoomInput.value = initialWebrtcCode;
   showWebrtcQr.disabled = false;
+  webrtcPeerName.textContent = "送信端末を待っています";
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => startWebrtcReceiver(initialWebrtcCode), { once: true });
   else startWebrtcReceiver(initialWebrtcCode);
 } else if (document.readyState === "loading") {

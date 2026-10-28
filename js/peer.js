@@ -72,9 +72,9 @@ export async function waitForChannel(channel) {
   return channel;
 }
 
-async function waitForSendCapacity(channel, bytes) {
+async function waitForSendCapacity(channel, bytes, queueLimit = SEND_QUEUE_LIMIT) {
   const deadline = Date.now() + 120_000;
-  while (channel.readyState === "open" && channel.bufferedAmount + bytes > SEND_QUEUE_LIMIT) {
+  while (channel.readyState === "open" && channel.bufferedAmount + bytes > queueLimit) {
     if (Date.now() >= deadline) throw new Error("送信キューが解消しません。受信側の空き容量や接続状態を確認してください。");
     // Polling avoids relying on bufferedamountlow events, which vary between
     // browser engines and may be missed around threshold changes.
@@ -83,10 +83,10 @@ async function waitForSendCapacity(channel, bytes) {
   if (channel.readyState !== "open") throw new Error("転送中に接続が切れました。");
 }
 
-async function sendWithBackpressure(channel, data, byteLength) {
+async function sendWithBackpressure(channel, data, byteLength, queueLimit = SEND_QUEUE_LIMIT) {
   const deadline = Date.now() + 120_000;
   while (true) {
-    await waitForSendCapacity(channel, byteLength);
+    await waitForSendCapacity(channel, byteLength, queueLimit);
     try {
       channel.send(data);
       return;
@@ -175,20 +175,32 @@ export async function connectTransfer({ isOfferer, sendSignal, subscribe }) {
   return { pc, channel, maxMessageSize };
 }
 
-export async function authorizeSender(channel, pin = "") {
+export async function authorizeSender(channel, pin = "", senderName = "") {
   await waitForChannel(channel);
   const result = waitForChannelMessage(channel, (message) => message?.type === "auth-result");
-  channel.send(JSON.stringify({ type: "auth", pin: String(pin).trim() }));
+  channel.send(JSON.stringify({ type: "auth", pin: String(pin).trim(), senderName: String(senderName).slice(0, 32) }));
   const response = await result;
-  if (!response.accepted) throw new Error("PINが正しくありません。受信側の設定を確認してください。");
+  if (!response.accepted) throw new Error(response.reason || "受信側で承認されませんでした。");
+  return response;
 }
 
-export async function authorizeReceiver(channel, expectedPin = "") {
+export async function authorizeReceiver(channel, expectedPin = "", receiverName = "", options = {}) {
   await waitForChannel(channel);
   const request = await waitForChannelMessage(channel, (message) => message?.type === "auth");
+  const approved = await options.onRequest?.(request);
+  if (approved === false) {
+    channel.send(JSON.stringify({ accepted: false, reason: "受信側が転送を拒否しました。" }));
+    throw new Error("受信側が転送を拒否しました。");
+  }
   const accepted = String(request.pin || "").trim() === String(expectedPin).trim();
-  channel.send(JSON.stringify({ type: "auth-result", accepted }));
+  channel.send(JSON.stringify({
+    type: "auth-result",
+    accepted,
+    reason: accepted ? "" : "PINが正しくありません。受信側の設定を確認してください。",
+    peerName: String(receiverName).slice(0, 32),
+  }));
   if (!accepted) throw new Error("送信側のPINが一致しませんでした。");
+  return { peerName: String(request.senderName || "送信端末") };
 }
 
 function waitForChannelMessage(channel, predicate) {
@@ -211,7 +223,7 @@ function waitForChannelMessage(channel, predicate) {
   });
 }
 
-export async function sendFiles(channel, files, onProgress, maxMessageSize = 64 * 1024) {
+export async function sendFiles(channel, files, onProgress, maxMessageSize = 64 * 1024, options = {}) {
   await waitForChannel(channel);
   channel.binaryType = "arraybuffer";
   const oversized = files.find((file) => !Number.isSafeInteger(file.size) || file.size < 0 || file.size > MAX_FILE_SIZE);
@@ -225,6 +237,7 @@ export async function sendFiles(channel, files, onProgress, maxMessageSize = 64 
   }));
   const totalBytes = fileMeta.reduce((sum, file) => sum + file.size, 0);
   let ackedBytes = 0;
+  let sentBytes = 0;
   let completed = false;
   let transferFailure = null;
   let rejectTransferFailure;
@@ -233,7 +246,7 @@ export async function sendFiles(channel, files, onProgress, maxMessageSize = 64 
   const startedAt = performance.now();
 
   const report = (fileName) => {
-    const visible = Math.min(totalBytes, ackedBytes);
+    const visible = Math.min(totalBytes, sentBytes);
     onProgress({
       sentBytes: visible,
       totalBytes,
@@ -280,7 +293,8 @@ export async function sendFiles(channel, files, onProgress, maxMessageSize = 64 
         if (channel.readyState !== "open") throw new Error("転送中に接続が切れました。");
         const slice = file.slice(offset, Math.min(file.size, offset + chunkSize));
         const buffer = await slice.arrayBuffer();
-        await sendWithBackpressure(channel, buffer, buffer.byteLength);
+        await sendWithBackpressure(channel, buffer, buffer.byteLength, options.queueLimit);
+        sentBytes += buffer.byteLength;
         if (transferFailure) throw transferFailure;
         report(file.name);
       }

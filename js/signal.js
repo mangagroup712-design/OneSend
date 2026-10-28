@@ -12,12 +12,12 @@ export async function createRoom() {
   return readJson(await fetch("/api/rooms", { method: "POST" }));
 }
 
-export async function joinRoom(code, role) {
+export async function joinRoom(code, role, metadata = {}) {
   if (!ROLE.has(role)) throw new Error("役割が不正です");
   return readJson(await fetch(`/api/rooms/${encodeURIComponent(code)}/join`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ role }),
+    body: JSON.stringify({ role, name: String(metadata.name || "").slice(0, 32) }),
   }));
 }
 

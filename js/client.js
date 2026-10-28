@@ -27,6 +27,9 @@ const textInputPanel = document.getElementById("text-input-panel");
 const pinCancelButton = document.getElementById("pin-cancel");
 const webrtcMode = document.getElementById("webrtc-mode");
 const webrtcPanel = document.getElementById("webrtc-panel");
+const lanDevicePicker = document.getElementById("lan-device-picker");
+const webrtcPeerPanel = document.getElementById("webrtc-peer-panel");
+const webrtcPeerName = document.getElementById("webrtc-peer-name");
 const createWebrtcRoom = document.getElementById("create-webrtc-room");
 const webrtcRoomCode = document.getElementById("webrtc-room-code");
 const showWebrtcQr = document.getElementById("show-webrtc-qr");
@@ -408,8 +411,10 @@ async function refreshDevices() {
   }
 }
 
-function promptForPin() {
+function promptForPin(required = true) {
   pinInput.value = "";
+  pinInput.required = required;
+  pinInput.placeholder = required ? "" : "PIN未設定の場合は空欄";
   return new Promise((resolve) => {
     const onCancel = () => pinDialog.close("cancel");
     const onSubmit = (event) => {
@@ -567,7 +572,17 @@ async function sendWebrtcTransfer() {
   };
   try {
     session.signal = openSignal(code, "sender");
-    await joinRoom(code, "sender");
+    session.signal.subscribe((payload) => {
+      if (payload?.kind === "peer-joined" && payload.role === "receiver") {
+        webrtcPeerName.textContent = payload.name || "受信端末";
+        webrtcPeerPanel.classList.remove("hidden");
+      }
+    });
+    const joined = await joinRoom(code, "sender", { name: deviceNameInput.value });
+    if (joined.peerName) {
+      webrtcPeerName.textContent = joined.peerName;
+      webrtcPeerPanel.classList.remove("hidden");
+    }
     const connected = await connectTransfer({
       isOfferer: true,
       sendSignal: (payload) => session.signal.send(payload),
@@ -575,11 +590,15 @@ async function sendWebrtcTransfer() {
     });
     session.pc = connected.pc;
     session.channel = connected.channel;
-    await authorizeSender(session.channel, code);
+    const pin = await promptForPin(false);
+    if (pin === null) throw new Error("PIN入力をキャンセルしました。");
+    const auth = await authorizeSender(session.channel, pin ?? "", deviceNameInput.value);
+    webrtcPeerName.textContent = auth.peerName || "受信端末";
+    webrtcPeerPanel.classList.remove("hidden");
     if (filesSnapshot.length) await sendFiles(session.channel, filesSnapshot, (progress) => {
       currentFile.textContent = progress.fileName ? `送信中: ${progress.fileName}` : "転送中";
       updateProgress(progress);
-    }, connected.maxMessageSize);
+    }, connected.maxMessageSize, { queueLimit: 16 * 1024 * 1024 });
     if (textSnapshot) await sendText(session.channel, textSnapshot, textTitleSnapshot);
     currentFile.textContent = "送信が完了しました";
     showBanner("WebRTCで送信が完了しました。", "ok");
@@ -588,6 +607,7 @@ async function sendWebrtcTransfer() {
   } finally {
     await active?.stop();
     active = null;
+    webrtcPeerPanel.classList.add("hidden");
     panel.classList.add("hidden");
     dropZone.classList.remove("hidden");
     fileCard.classList.toggle("hidden", selectedFiles.length === 0 && !selectedText);
@@ -669,6 +689,8 @@ async function stopTransfer() {
 stopButton.addEventListener("click", stopTransfer);
 webrtcMode?.addEventListener("change", () => {
   webrtcPanel.classList.toggle("hidden", !webrtcMode.checked);
+  lanDevicePicker.classList.toggle("hidden", webrtcMode.checked);
+  if (!webrtcMode.checked) webrtcPeerPanel.classList.add("hidden");
   if (!webrtcMode.checked) {
     webrtcRoomCode.value = "";
     showWebrtcQr.disabled = true;

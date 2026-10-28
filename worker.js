@@ -34,6 +34,7 @@ function createState(code) {
     createdAt: Date.now(),
     seq: 0,
     present: { sender: false, receiver: false },
+    names: { sender: "", receiver: "" },
     queues: { sender: [], receiver: [] },
     waiters: { sender: [], receiver: [] },
   };
@@ -108,8 +109,14 @@ async function handleRoom(room, request, url, code) {
     const role = body.role === "sender" ? "sender" : body.role === "receiver" ? "receiver" : null;
     if (!role) return json({ error: "role が不正です" }, 400);
     room.present[role] = true;
-    push(room, role, { kind: "peer-joined", role });
-    return json({ ok: true, code, present: room.present });
+    room.names ||= { sender: "", receiver: "" };
+    room.names[role] = cleanRoomPeerName(body.name);
+    push(room, role, { kind: "peer-joined", role, name: room.names[role] });
+    return json({ ok: true, code, present: room.present, peerName: room.names[peerOf(role)] || "" });
+  }
+
+  function cleanRoomPeerName(value) {
+    return String(value || "接続端末").replace(/[<>\u0000-\u001f]/g, "").trim().slice(0, 32) || "接続端末";
   }
 
   if (url.pathname.endsWith("/signal") && request.method === "POST") {
@@ -149,8 +156,8 @@ export class TransferRoom {
   }
 
   persist() {
-    const { code, createdAt, seq, present, queues } = this.room;
-    return this.state.storage.put("room", { code, createdAt, seq, present, queues });
+    const { code, createdAt, seq, present, names, queues } = this.room;
+    return this.state.storage.put("room", { code, createdAt, seq, present, names, queues });
   }
 
   async fetch(request) {

@@ -27,16 +27,20 @@
       <label class="mode-toggle"><input id="webrtc-mode" type="checkbox"><span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span class="mode-label">WebRTCモード</span><small>部屋IDで別ネットワークへ送る</small></label>
       <section id="webrtc-panel" class="webrtc-panel hidden" aria-labelledby="webrtc-heading">
         <h2 id="webrtc-heading">WebRTC接続</h2>
-        <div class="room-input-row"><input id="webrtc-room-code" class="code-input" type="text" inputmode="text" maxlength="6" placeholder="部屋コード" aria-label="部屋コード"><button class="secondary" id="create-webrtc-room" type="button">部屋を作る</button></div>
+        <div class="room-input-row"><input id="webrtc-room-code" class="code-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="部屋コード"><button class="secondary" id="create-webrtc-room" type="button">部屋を作る</button></div>
         <div class="room-panel-actions"><button class="secondary" id="show-webrtc-qr" type="button" disabled>ペアリングQRを表示</button><button class="primary" id="open-webrtc-send" type="button" disabled>WebRTCで送信</button></div>
         <p class="hint">部屋コードを受信側へ共有するか、QRコードを読み取ってもらってください。</p>
       </section>
-      <section class="device-picker" aria-labelledby="devices-heading">
+      <section id="lan-device-picker" class="device-picker" aria-labelledby="devices-heading">
         <div><h2 id="devices-heading">待機中の端末</h2><p class="hint">端末をタップして選択します。長押しすると複数選択できます。</p></div>
         <div class="device-list" id="device-list" aria-live="polite"><p class="hint">受信端末を検索しています…</p></div>
         <button class="secondary clear-selection hidden" id="clear-device-selection" type="button">選択解除</button>
         <button class="primary" id="send-files-btn" type="button" disabled>送信</button>
         <p id="banner" class="banner hidden" role="status"></p>
+      </section>
+      <section id="webrtc-peer-panel" class="webrtc-peer-panel hidden" aria-live="polite">
+        <span class="peer-status-dot"></span>
+        <div><p class="peer-status-label">接続済みの端末</p><strong id="webrtc-peer-name">受信端末を待っています</strong></div>
       </section>
       <div id="transfer-panel" class="hidden">
         <div class="camera-overlay">
