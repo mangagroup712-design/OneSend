@@ -7,6 +7,7 @@
     <meta name="theme-color" content="#1678b8" />
     <link rel="stylesheet" href="/css/main.css" />
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" defer></script>
     <script type="module" src="/js/read.js"></script>
   </head>
   <body><div class="page compact-page"><header class="site-header"><a class="header-brand" href="/">OneSend</a><nav class="header-nav" aria-label="メインメニュー"><a class="back-link" href="/">トップへ</a><a href="/send.html">送る</a><a href="/receive.html">受け取る</a></nav></header><main class="hero reader-shell">
@@ -24,17 +25,16 @@
           <label id="pin-field" class="device-name-field hidden">PIN<input id="receive-pin" class="text-input" type="password" inputmode="numeric" maxlength="32" autocomplete="new-password"></label>
           <p class="hint">端末名はこのブラウザーで設定します。OSの端末名はブラウザーから取得できません。</p>
         </section>
-        <label class="mode-toggle"><input id="webrtc-mode" type="checkbox"><span>WebRTCモード</span><small>部屋コードで別ネットワークから受け取る</small></label>
+        <label class="mode-toggle"><input id="webrtc-mode" type="checkbox"><span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span class="mode-label">WebRTCモード</span><small>部屋コードで別ネットワークから受け取る</small></label>
+        <section id="webrtc-panel" class="webrtc-panel hidden" aria-labelledby="webrtc-heading">
+          <h2 id="webrtc-heading">WebRTC接続</h2>
+          <div class="room-input-row"><input id="webrtc-room-code" class="code-input" type="text" inputmode="text" maxlength="6" pattern="[A-Za-z0-9]{6}" placeholder="部屋コード" aria-label="部屋コード"><button class="secondary" id="show-webrtc-qr" type="button" disabled>ペアリングQRを表示</button></div>
+          <button class="primary" id="open-webrtc-receive" type="button">部屋に接続</button>
+          <p class="hint">送信側から共有された部屋コードを入力してください。</p>
+        </section>
         <section class="incoming-section" aria-labelledby="incoming-heading"><h2 id="incoming-heading">接続リクエスト</h2><div id="request-list" class="request-list" aria-live="polite"><p class="hint">接続要求を待っています…</p></div></section>
       </div>
-      <dialog id="webrtc-room-dialog" class="pin-dialog">
-        <form method="dialog" id="webrtc-room-form">
-          <h2>WebRTCモード</h2>
-          <p>送信側から共有された6文字の部屋コードを入力してください。</p>
-          <input id="webrtc-room-code" class="code-input" type="text" inputmode="text" maxlength="6" pattern="[A-Za-z0-9]{6}" autocomplete="off" placeholder="ABC123" required aria-label="部屋コード">
-          <div class="dialog-actions"><button class="secondary" value="cancel" type="submit">キャンセル</button><button class="primary" id="open-webrtc-receive" value="continue" type="submit">受信画面へ</button></div>
-        </form>
-      </dialog>
+      <dialog id="qr-dialog" class="pin-dialog"><form method="dialog"><h2>ペアリングQRコード</h2><p>このURLを読み取ると部屋コードが入力された受信画面を開きます。</p><canvas id="qr-canvas" class="qr-canvas"></canvas><p id="qr-url" class="qr-url"></p><div class="dialog-actions"><button class="primary" value="close" type="submit">閉じる</button></div></form></dialog>
       <dialog id="approval-dialog" class="approval-dialog"><div class="approval-content"><p class="brand small">受信確認</p><h2 id="approval-title">この送信を受け取りますか？</h2><div id="approval-details"></div><div class="dialog-actions"><button id="reject-approval" class="reject-request" type="button"><span aria-hidden="true">×</span> 拒否</button><button id="accept-approval" class="accept-request" type="button"><span aria-hidden="true">✓</span> 受け取る</button></div></div></dialog>
       <p id="banner" class="banner hidden" role="status"></p>
     </div>

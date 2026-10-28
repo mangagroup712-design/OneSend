@@ -30,9 +30,13 @@ const approvalTitle = document.getElementById("approval-title");
 const acceptApproval = document.getElementById("accept-approval");
 const rejectApproval = document.getElementById("reject-approval");
 const webrtcMode = document.getElementById("webrtc-mode");
-const webrtcRoomDialog = document.getElementById("webrtc-room-dialog");
+const webrtcPanel = document.getElementById("webrtc-panel");
 const webrtcRoomInput = document.getElementById("webrtc-room-code");
 const openWebrtcReceive = document.getElementById("open-webrtc-receive");
+const showWebrtcQr = document.getElementById("show-webrtc-qr");
+const qrDialog = document.getElementById("qr-dialog");
+const qrCanvas = document.getElementById("qr-canvas");
+const qrUrl = document.getElementById("qr-url");
 let shownRequest = null;
 const storageNameKey = "OneSend-device-name";
 const profileIdKey = "OneSend-profile-id";
@@ -401,15 +405,13 @@ rejectApproval.addEventListener("click", () => { if (shownRequest) answerRequest
 webrtcRoomInput?.addEventListener("input", () => {
   webrtcRoomInput.value = webrtcRoomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
   webrtcRoomInput.setCustomValidity("");
+  showWebrtcQr.disabled = !/^[A-Z0-9]{6}$/.test(webrtcRoomInput.value);
 });
 webrtcMode?.addEventListener("change", () => {
-  if (webrtcMode.checked) webrtcRoomDialog.showModal();
-});
-webrtcRoomDialog?.addEventListener("close", () => {
-  if (webrtcRoomDialog.returnValue !== "continue") webrtcMode.checked = false;
+  webrtcPanel.classList.toggle("hidden", !webrtcMode.checked);
+  if (!webrtcMode.checked) webrtcRoomInput.value = "";
 });
 openWebrtcReceive?.addEventListener("click", (event) => {
-  event.preventDefault();
   const code = webrtcRoomInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
   if (!/^[A-Z0-9]{6}$/.test(code)) {
     webrtcRoomInput.setCustomValidity("6文字の部屋コードを入力してください。");
@@ -417,6 +419,21 @@ openWebrtcReceive?.addEventListener("click", (event) => {
     return;
   }
   window.location.href = `/remote-receive.html?code=${encodeURIComponent(code)}`;
+});
+showWebrtcQr?.addEventListener("click", () => {
+  const url = new URL(`/remote-receive.html?code=${encodeURIComponent(webrtcRoomInput.value)}`, window.location.origin).href;
+  if (!globalThis.QRCode?.toCanvas) {
+    showBanner("QRコード機能を読み込めませんでした。");
+    return;
+  }
+  globalThis.QRCode.toCanvas(qrCanvas, url, { width: 240, margin: 2 }, (error) => {
+    if (error) {
+      showBanner("QRコードを作成できませんでした。");
+      return;
+    }
+    qrUrl.textContent = url;
+    qrDialog.showModal();
+  });
 });
 
 async function startReceiver() {

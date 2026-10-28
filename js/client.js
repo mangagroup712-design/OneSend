@@ -26,10 +26,14 @@ const openTextInputButton = document.getElementById("open-text-input");
 const textInputPanel = document.getElementById("text-input-panel");
 const pinCancelButton = document.getElementById("pin-cancel");
 const webrtcMode = document.getElementById("webrtc-mode");
-const webrtcRoomDialog = document.getElementById("webrtc-room-dialog");
+const webrtcPanel = document.getElementById("webrtc-panel");
 const createWebrtcRoom = document.getElementById("create-webrtc-room");
 const webrtcRoomCode = document.getElementById("webrtc-room-code");
+const showWebrtcQr = document.getElementById("show-webrtc-qr");
 const openWebrtcSend = document.getElementById("open-webrtc-send");
+const qrDialog = document.getElementById("qr-dialog");
+const qrCanvas = document.getElementById("qr-canvas");
+const qrUrl = document.getElementById("qr-url");
 
 let selectedFiles = [];
 let selectedText = "";
@@ -604,16 +608,19 @@ async function stopTransfer() {
 
 stopButton.addEventListener("click", stopTransfer);
 webrtcMode?.addEventListener("change", () => {
-  if (!webrtcMode.checked) return;
-  webrtcRoomCode.textContent = "";
-  openWebrtcSend.disabled = true;
-  webrtcRoomDialog.showModal();
+  webrtcPanel.classList.toggle("hidden", !webrtcMode.checked);
+  if (!webrtcMode.checked) {
+    webrtcRoomCode.value = "";
+    showWebrtcQr.disabled = true;
+    openWebrtcSend.disabled = true;
+  }
 });
 createWebrtcRoom?.addEventListener("click", async () => {
   createWebrtcRoom.disabled = true;
   try {
     const { code } = await createRoom();
-    webrtcRoomCode.textContent = code;
+    webrtcRoomCode.value = code;
+    showWebrtcQr.disabled = false;
     openWebrtcSend.disabled = false;
   } catch (error) {
     showBanner(error.message || "部屋を作成できませんでした。");
@@ -621,12 +628,29 @@ createWebrtcRoom?.addEventListener("click", async () => {
     createWebrtcRoom.disabled = false;
   }
 });
-webrtcRoomDialog?.addEventListener("close", () => {
-  if (webrtcRoomDialog.returnValue !== "continue") webrtcMode.checked = false;
+webrtcRoomCode?.addEventListener("input", () => {
+  webrtcRoomCode.value = webrtcRoomCode.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  const valid = /^[A-Z0-9]{6}$/.test(webrtcRoomCode.value);
+  showWebrtcQr.disabled = !valid;
+  openWebrtcSend.disabled = !valid;
 });
 openWebrtcSend?.addEventListener("click", (event) => {
-  event.preventDefault();
-  window.location.href = `/remote-send.html?code=${encodeURIComponent(webrtcRoomCode.textContent)}`;
+  window.location.href = `/remote-send.html?code=${encodeURIComponent(webrtcRoomCode.value)}`;
+});
+showWebrtcQr?.addEventListener("click", () => {
+  const url = new URL(`/remote-receive.html?code=${encodeURIComponent(webrtcRoomCode.value)}`, window.location.origin).href;
+  if (!globalThis.QRCode?.toCanvas) {
+    showBanner("QRコード機能を読み込めませんでした。");
+    return;
+  }
+  globalThis.QRCode.toCanvas(qrCanvas, url, { width: 240, margin: 2 }, (error) => {
+    if (error) {
+      showBanner("QRコードを作成できませんでした。");
+      return;
+    }
+    qrUrl.textContent = url;
+    qrDialog.showModal();
+  });
 });
 window.addEventListener("pagehide", () => active?.stop());
 refreshDevices();

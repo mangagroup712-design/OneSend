@@ -110,8 +110,20 @@ input[type="file"] { display: none; }
 .text-input:focus { outline: 2px solid color-mix(in srgb, var(--leaf) 42%, transparent); outline-offset: 1px; }
 .device-picker, .speed-guide, .receive-settings, .incoming-section { display: grid; gap: .75rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--moss) 16%, transparent); border-radius: .9rem; background: color-mix(in srgb, white 48%, transparent); }
 .mode-toggle { display: grid; grid-template-columns: auto 1fr; gap: .1rem .55rem; align-items: center; padding: .7rem .8rem; border-radius: .7rem; background: color-mix(in srgb, var(--lime) 36%, white); color: var(--moss); font-weight: 600; cursor: pointer; }
-.mode-toggle input { width: 1.15rem; height: 1.15rem; accent-color: var(--leaf); grid-row: span 2; }
+.mode-toggle input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.toggle-track { position: relative; grid-row: span 2; width: 2.8rem; height: 1.6rem; border-radius: 999px; background: color-mix(in srgb, var(--ink) 24%, white); transition: background .2s ease; }
+.toggle-thumb { position: absolute; top: .2rem; left: .2rem; width: 1.2rem; height: 1.2rem; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s ease; }
+.mode-toggle input:checked + .toggle-track { background: var(--leaf); }
+.mode-toggle input:checked + .toggle-track .toggle-thumb { transform: translateX(1.2rem); }
+.mode-label { grid-column: 2; }
 .mode-toggle small { color: color-mix(in srgb, var(--ink) 58%, transparent); font-size: .78rem; font-weight: 400; }
+.webrtc-panel { display: grid; gap: .7rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--leaf) 24%, transparent); border-radius: .9rem; background: color-mix(in srgb, white 58%, transparent); }
+.webrtc-panel h2 { margin: 0; color: var(--moss); font-size: 1rem; }
+.room-input-row, .room-panel-actions { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.room-input-row .code-input { flex: 1 1 12rem; min-width: 0; }
+.room-input-row button, .room-panel-actions button { flex: 1 1 10rem; }
+.qr-canvas { display: block; width: min(240px, 100%); height: auto; margin: .4rem auto 0; }
+.qr-url { overflow-wrap: anywhere; color: var(--moss); font-size: .75rem; text-align: center; }
 .room-code-output { display: block; min-height: 2rem; color: var(--leaf); font: 700 1.8rem ui-monospace, "Cascadia Code", monospace; letter-spacing: .2em; text-align: center; }
 .device-picker h2, .speed-guide h2, .receive-settings h2, .incoming-section h2, .pin-dialog h2 { margin: 0; color: var(--moss); font-family: "Fraunces", Georgia, serif; font-size: 1.2rem; font-weight: 600; }
 .device-picker p, .speed-guide p { margin: .25rem 0 0; }
