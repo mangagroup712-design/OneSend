@@ -1,4 +1,4 @@
-const VERSION = "v8";
+const VERSION = "v9";
 const CACHE = `OneSend-${VERSION}`;
 const SHELL = [
   "/", "/send.html", "/receive.html", "/404.html",

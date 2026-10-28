@@ -56,7 +56,6 @@ main.hero.narrow, main.hero.reader-shell { padding-top: 2rem; }
 .mono { font-family: ui-monospace, "Cascadia Code", monospace; font-size: .95em; }
 .form-shell { width: 100%; max-width: var(--content-width); display: grid; gap: .9rem; animation: rise .9s .12s ease both; }
 .home-actions { grid-template-columns: 1fr 1fr; }
-.remote-link { font-size: .92rem; }
 .room-card { display: grid; gap: .7rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: .85rem; background: color-mix(in srgb, white 52%, transparent); }
 .room-card h2 { margin: 0; color: var(--moss); font-size: 1rem; }
 .room-actions { display: flex; gap: .6rem; align-items: center; }
@@ -118,7 +117,7 @@ input[type="file"] { display: none; }
 .mode-label { grid-column: 2; }
 .mode-toggle small { color: color-mix(in srgb, var(--ink) 58%, transparent); font-size: .78rem; font-weight: 400; }
 .webrtc-panel { display: grid; gap: .8rem; width: 100%; box-sizing: border-box; padding: clamp(1.15rem, 3vw, 1.6rem); border: 1px solid color-mix(in srgb, var(--leaf) 28%, transparent); border-radius: 1.1rem; background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--lime) 34%, white), transparent 62%), color-mix(in srgb, white 66%, transparent); box-shadow: 0 16px 38px rgba(17, 49, 74, .1); animation: webrtc-panel-enter .38s cubic-bezier(.2,.8,.2,1) both; }
-.webrtc-panel h2 { margin: 0; color: var(--moss); font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; text-align: center; }
+.webrtc-panel h2 { margin: 0; color: var(--moss); font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; text-align: left; }
 .room-input-row, .room-panel-actions { display: flex; gap: .6rem; align-items: stretch; flex-wrap: wrap; width: 100%; }
 .room-input-row .code-input { flex: 1 1 12rem; min-width: 0; }
 .room-input-row button, .room-panel-actions button { flex: 1 1 10rem; min-height: 3rem; }
@@ -136,7 +135,6 @@ input[type="file"] { display: none; }
 .webrtc-peer-panel strong { color: var(--moss); font-family: "Fraunces", Georgia, serif; font-size: 1.2rem; }
 @keyframes webrtc-panel-enter { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes peer-pulse { 0%, 100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.18); opacity: 1; } }
-.room-code-output { display: block; min-height: 2rem; color: var(--leaf); font: 700 1.8rem ui-monospace, "Cascadia Code", monospace; letter-spacing: .2em; text-align: center; }
 .device-picker h2, .speed-guide h2, .receive-settings h2, .incoming-section h2, .pin-dialog h2 { margin: 0; color: var(--moss); font-family: "Fraunces", Georgia, serif; font-size: 1.2rem; font-weight: 600; }
 .device-picker p, .speed-guide p { margin: .25rem 0 0; }
 .device-list { display: flex; flex-wrap: wrap; gap: .9rem; min-height: 5.5rem; align-items: flex-start; }
