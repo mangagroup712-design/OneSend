@@ -14,13 +14,10 @@ class_name = "TransferRoom"
 name = "DEVICES"
 class_name = "DeviceDirectory"
 
-<<<<<<< HEAD
-=======
 [[durable_objects.bindings]]
 name = "ROOM_RATE_LIMITS"
 class_name = "RoomRateLimiter"
 
->>>>>>> 2e67a06 (最適化)
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["TransferRoom"]
@@ -28,10 +25,7 @@ new_sqlite_classes = ["TransferRoom"]
 [[migrations]]
 tag = "v2"
 new_sqlite_classes = ["DeviceDirectory"]
-<<<<<<< HEAD
-=======
 
 [[migrations]]
 tag = "v3"
 new_sqlite_classes = ["RoomRateLimiter"]
->>>>>>> 2e67a06 (最適化)

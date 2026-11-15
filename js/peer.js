@@ -11,8 +11,6 @@ const CONNECT_TIMEOUT_MS = 25_000;
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
 ];
-<<<<<<< HEAD
-=======
 let iceCache = null;
 let iceCacheExpiresAt = 0;
 const activeTempFiles = new Set();
@@ -42,7 +40,6 @@ async function getIceServers() {
     return ICE_SERVERS;
   }
 }
->>>>>>> 2e67a06 (最適化)
 
 function parseMessage(data) {
   if (typeof data !== "string") return { binary: data };
@@ -76,13 +73,8 @@ export function formatSize(bytes) {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-<<<<<<< HEAD
-export function createPeerConnection() {
-  return new RTCPeerConnection({ iceServers: ICE_SERVERS });
-=======
 export async function createPeerConnection() {
   return new RTCPeerConnection({ iceServers: await getIceServers() });
->>>>>>> 2e67a06 (最適化)
 }
 
 export async function waitForChannel(channel) {
@@ -136,13 +128,8 @@ async function sendWithBackpressure(channel, data, byteLength, queueLimit = SEND
   }
 }
 
-<<<<<<< HEAD
-export async function connectTransfer({ isOfferer, sendSignal, subscribe }) {
-  const pc = createPeerConnection();
-=======
 export async function connectTransfer({ isOfferer, sendSignal, subscribe, onConnectionInfo }) {
   const pc = await createPeerConnection();
->>>>>>> 2e67a06 (最適化)
   const channelPromise = isOfferer
     ? Promise.resolve(pc.createDataChannel("OneSend", { ordered: true }))
     : new Promise((resolve) => {
@@ -211,8 +198,6 @@ export async function connectTransfer({ isOfferer, sendSignal, subscribe, onConn
     }),
   ]);
   channel.binaryType = "arraybuffer";
-<<<<<<< HEAD
-=======
   // The selected candidate pair is available only after ICE has connected.
   window.setTimeout(async () => {
     try {
@@ -224,7 +209,6 @@ export async function connectTransfer({ isOfferer, sendSignal, subscribe, onConn
       // Connection information is advisory and must not affect a transfer.
     }
   }, 500);
->>>>>>> 2e67a06 (最適化)
   const maxMessageSize = Number(pc.sctp?.maxMessageSize) > 0
     ? Number(pc.sctp.maxMessageSize)
     : 64 * 1024;
@@ -243,14 +227,6 @@ export async function authorizeSender(channel, pin = "", senderName = "") {
 export async function authorizeReceiver(channel, expectedPin = "", receiverName = "", options = {}) {
   await waitForChannel(channel);
   const request = await waitForChannelMessage(channel, (message) => message?.type === "auth");
-<<<<<<< HEAD
-  const approved = await options.onRequest?.(request);
-  if (approved === false) {
-    channel.send(JSON.stringify({ accepted: false, reason: "受信側が転送を拒否しました。" }));
-    throw new Error("受信側が転送を拒否しました。");
-  }
-  const accepted = String(request.pin || "").trim() === String(expectedPin).trim();
-=======
   if (options.isBlocked?.(request)) {
     channel.send(JSON.stringify({ type: "auth-result", accepted: false, reason: "この送信元からのPIN試行は一時的に制限されています。" }));
     throw new Error("この送信元からのPIN試行は一時的に制限されています。");
@@ -262,7 +238,6 @@ export async function authorizeReceiver(channel, expectedPin = "", receiverName 
   }
   const accepted = String(request.pin || "").trim() === String(expectedPin).trim();
   if (!accepted) options.onPinFailure?.(request);
->>>>>>> 2e67a06 (最適化)
   channel.send(JSON.stringify({
     type: "auth-result",
     accepted,
@@ -322,11 +297,7 @@ export async function sendFiles(channel, files, onProgress, maxMessageSize = 64 
       totalBytes,
       fileName,
       speed: speed(visible, startedAt),
-<<<<<<< HEAD
-      percent: totalBytes ? percent(visible, totalBytes) : completed ? 100 : 0,
-=======
       percent: totalBytes ? (completed ? 100 : Math.min(99, percent(visible, totalBytes))) : completed ? 100 : 0,
->>>>>>> 2e67a06 (最適化)
     });
   };
 
@@ -513,12 +484,8 @@ export function receiveFiles(channel, handlers) {
           tempName = `onetransfer-${crypto.randomUUID()}.part`;
           const handle = await root.getFileHandle(tempName, { create: true });
           current.writable = await handle.createWritable();
-<<<<<<< HEAD
-          current.cleanup = () => root.removeEntry(tempName).catch(() => {});
-=======
           activeTempFiles.add(tempName);
           current.cleanup = () => { activeTempFiles.delete(tempName); return root.removeEntry(tempName).catch(() => {}); };
->>>>>>> 2e67a06 (最適化)
           current.fileHandle = handle;
         }
       } catch {

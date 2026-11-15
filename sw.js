@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-const VERSION = "v11";
-const CACHE = `OneSend-${VERSION}`;
-const SHELL = [
-  "/", "/send.html", "/receive.html", "/404.html",
-  "/css/main.css",
-  "/js/client.js", "/js/read.js", "/js/signal.js", "/js/peer.js", "/js/pwa.js",
-  "/manifest.json", "/manifest.webmanifest", "/favicon.ico",
-=======
 const VERSION = "v13";
 const CACHE = `OneSend-${VERSION}`;
 const SHELL = [
@@ -14,7 +5,6 @@ const SHELL = [
   "/css/main.css",
   "/js/client.js", "/js/read.js", "/js/signal.js", "/js/peer.js", "/js/pwa.js", "/js/qrcode-generator.js", "/js/qrcode-adapter.js",
   "/manifest.webmanifest", "/favicon.ico",
->>>>>>> 2e67a06 (最適化)
   "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js",
 ];
 const RUNTIME_ORIGINS = [
