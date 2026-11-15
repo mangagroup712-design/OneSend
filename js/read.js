@@ -1,5 +1,9 @@
 import {
   createRoom,
+<<<<<<< HEAD
+=======
+  deleteRoom,
+>>>>>>> 2e67a06 (最適化)
   decideRequest,
   joinRoom,
   listRequests,
@@ -7,7 +11,11 @@ import {
   publishDevice,
   removeDevice,
 } from "./signal.js";
+<<<<<<< HEAD
 import { authorizeReceiver, connectTransfer, formatSize, formatSpeed, receiveFiles } from "./peer.js";
+=======
+import { authorizeReceiver, cleanupOneSendTempFiles, connectTransfer, formatSize, formatSpeed, receiveFiles } from "./peer.js";
+>>>>>>> 2e67a06 (最適化)
 
 const currentFile = document.getElementById("current-file");
 const progressBar = document.getElementById("progress-bar");
@@ -23,6 +31,21 @@ const deviceNameInput = document.getElementById("device-name");
 const pinRequiredInput = document.getElementById("pin-required");
 const pinField = document.getElementById("pin-field");
 const receivePinInput = document.getElementById("receive-pin");
+<<<<<<< HEAD
+=======
+const rememberPinInput = document.getElementById("remember-pin");
+const listDeviceInput = document.getElementById("list-device");
+const pinFailures = new Map();
+
+function senderKey(request) { return String(request?.senderName || "送信元不明").slice(0, 32); }
+function senderBlocked(request) { return (pinFailures.get(senderKey(request))?.blockedUntil || 0) > Date.now(); }
+function recordPinFailure(request) {
+  const key = senderKey(request); const prior = pinFailures.get(key) || { count: 0, blockedUntil: 0 };
+  const next = { count: prior.count + 1, blockedUntil: prior.count + 1 >= 3 ? Date.now() + 5 * 60_000 : 0 };
+  pinFailures.set(key, next);
+  if (next.blockedUntil) showBanner("PIN不一致が続いたため、この送信元を5分間制限しました。", "warn");
+}
+>>>>>>> 2e67a06 (最適化)
 const requestList = document.getElementById("request-list");
 const incomingSection = document.querySelector(".incoming-section");
 const approvalDialog = document.getElementById("approval-dialog");
@@ -76,16 +99,33 @@ function suggestedDeviceName() {
 deviceNameInput.value = localStorage.getItem(storageNameKey) || suggestedDeviceName();
 localStorage.setItem(storageNameKey, deviceNameInput.value);
 pinRequiredInput.checked = localStorage.getItem("OneSend-pin-required") === "true";
+<<<<<<< HEAD
 receivePinInput.value = localStorage.getItem("OneSend-pin") || "";
+=======
+rememberPinInput.checked = localStorage.getItem("OneSend-remember-pin") === "true";
+receivePinInput.value = (rememberPinInput.checked ? localStorage.getItem("OneSend-pin") : sessionStorage.getItem("OneSend-pin")) || "";
+listDeviceInput.checked = localStorage.getItem("OneSend-list-device") !== "false";
+>>>>>>> 2e67a06 (最適化)
 pinField.classList.toggle("hidden", !pinRequiredInput.checked);
 receivePinInput.required = pinRequiredInput.checked;
 
 function saveSettings() {
   deviceNameInput.value = deviceNameInput.value.trim().slice(0, 32) || "この端末";
+<<<<<<< HEAD
   receivePinInput.value = receivePinInput.value.trim().slice(0, 32);
   localStorage.setItem(storageNameKey, deviceNameInput.value);
   localStorage.setItem("OneSend-pin-required", String(pinRequiredInput.checked));
   localStorage.setItem("OneSend-pin", receivePinInput.value.slice(0, 32));
+=======
+  receivePinInput.value = receivePinInput.value.replace(/\D/g, "").slice(0, 32);
+  localStorage.setItem(storageNameKey, deviceNameInput.value);
+  localStorage.setItem("OneSend-pin-required", String(pinRequiredInput.checked));
+  localStorage.setItem("OneSend-remember-pin", String(rememberPinInput.checked));
+  localStorage.removeItem("OneSend-pin");
+  sessionStorage.removeItem("OneSend-pin");
+  (rememberPinInput.checked ? localStorage : sessionStorage).setItem("OneSend-pin", receivePinInput.value);
+  localStorage.setItem("OneSend-list-device", String(listDeviceInput.checked));
+>>>>>>> 2e67a06 (最適化)
   pinField.classList.toggle("hidden", !pinRequiredInput.checked);
   receivePinInput.required = pinRequiredInput.checked;
   if (active?.code) publishDeviceInfo(active.code).catch((error) => showBanner(error.message));
@@ -95,6 +135,11 @@ function saveSettings() {
 deviceNameInput.addEventListener("change", saveSettings);
 pinRequiredInput.addEventListener("change", saveSettings);
 receivePinInput.addEventListener("change", saveSettings);
+<<<<<<< HEAD
+=======
+rememberPinInput.addEventListener("change", saveSettings);
+listDeviceInput.addEventListener("change", saveSettings);
+>>>>>>> 2e67a06 (最適化)
 
 const showBanner = (message, type = "error") => {
   banner.textContent = message;
@@ -259,6 +304,10 @@ async function stopSession() {
   clearInterval(session.heartbeat);
   clearInterval(session.poller);
   await removeDevice(session.id, deviceSecret).catch(() => {});
+<<<<<<< HEAD
+=======
+  if (session.roomToken) await deleteRoom(session.code, "receiver", session.roomToken).catch(() => {});
+>>>>>>> 2e67a06 (最適化)
   await session.stop();
 }
 
@@ -270,7 +319,11 @@ function publishDeviceInfo(code, available = active?.available ?? true) {
     name: deviceNameInput.value.trim() || "この端末",
     code,
     pinRequired: pinRequiredInput.checked && Boolean(receivePinInput.value.trim()),
+<<<<<<< HEAD
     available,
+=======
+    available: available && listDeviceInput.checked,
+>>>>>>> 2e67a06 (最適化)
   });
 }
 
@@ -300,13 +353,25 @@ function renderRequests(requests) {
   rows.forEach((file) => { const li = document.createElement("li"); li.textContent = `${file.name} — ${formatSize(file.size)}`; list.append(li); });
   if ((request.fileCount || rows.length) > rows.length) { const li = document.createElement("li"); li.textContent = `ほか ${request.fileCount - rows.length} 件`; list.append(li); }
   approvalDetails.append(title, summary, list);
+<<<<<<< HEAD
+=======
+  if (!navigator.storage?.getDirectory && Number(request.totalBytes) > 512 * 1024 * 1024) {
+    const warning = document.createElement("p"); warning.className = "hint";
+    warning.textContent = "このブラウザーでは受信データをメモリに保持します。512MBを超えるため、空きメモリを確認してから受け取ってください。";
+    approvalDetails.append(warning);
+  }
+>>>>>>> 2e67a06 (最適化)
   if (!approvalDialog.open) approvalDialog.showModal();
 }
 
 async function refreshRequests() {
   if (!active?.available || active.accepting) return;
   try {
+<<<<<<< HEAD
     const { requests } = await listRequests(active.id, deviceSecret);
+=======
+    const { requests } = await listRequests(active.id, deviceSecret, true);
+>>>>>>> 2e67a06 (最適化)
     if (active?.available && !active.accepting) renderRequests(requests);
   } catch (error) {
     if (active?.available) showBanner(error.message || "接続要求を取得できませんでした。");
@@ -336,11 +401,19 @@ async function answerRequest(request, accepted) {
       isOfferer: false,
       sendSignal: (payload) => signal.send(payload),
       subscribe: (listener) => signal.subscribe(listener),
+<<<<<<< HEAD
+=======
+      onConnectionInfo: ({ relay }) => { if (relay) showBanner("中継経由のため速度が遅くなる場合があります", "warn"); },
+>>>>>>> 2e67a06 (最適化)
     });
     active.pc = connected.pc;
     active.channel = connected.channel;
     const pin = pinRequiredInput.checked ? receivePinInput.value : "";
+<<<<<<< HEAD
     await authorizeReceiver(active.channel, pin);
+=======
+    await authorizeReceiver(active.channel, pin, "", { isBlocked: senderBlocked, onPinFailure: recordPinFailure });
+>>>>>>> 2e67a06 (最適化)
     pairing.classList.add("hidden");
     currentFile.textContent = "接続しました。ファイルを待っています";
     showBanner("接続しました。ファイルを受信しています。", "ok");
@@ -372,7 +445,14 @@ async function answerRequest(request, accepted) {
         currentFile.textContent = "すべてのファイルを受信しました";
         showBanner("受信が完了しました。", "ok");
         againButton.disabled = false;
+<<<<<<< HEAD
         if (active === session) removeDevice(session.id, deviceSecret).catch(() => {});
+=======
+        if (active === session) {
+          removeDevice(session.id, deviceSecret).catch(() => {});
+          deleteRoom(session.code, "receiver", session.roomToken).catch(() => {});
+        }
+>>>>>>> 2e67a06 (最適化)
       },
       onError(error) {
         if (active !== session || session.stopping) return;
@@ -421,7 +501,11 @@ webrtcMode?.addEventListener("change", async () => {
 openWebrtcReceive?.addEventListener("click", (event) => {
   const code = webrtcRoomInput.value.trim();
   if (!/^\d{6}$/.test(code)) {
+<<<<<<< HEAD
     webrtcRoomInput.setCustomValidity("6文字の部屋コードを入力してください。");
+=======
+    webrtcRoomInput.setCustomValidity("6桁の部屋コードを入力してください。");
+>>>>>>> 2e67a06 (最適化)
     webrtcRoomInput.reportValidity();
     return;
   }
@@ -472,11 +556,18 @@ async function startWebrtcReceiver(code) {
   resetResults();
   pairing.classList.add("hidden");
   currentFile.textContent = "WebRTC接続を待っています…";
+<<<<<<< HEAD
   const signal = openSignal(code, "receiver");
   const session = {
     id: deviceId,
     code,
     signal,
+=======
+  const session = {
+    id: deviceId,
+    code,
+    signal: null,
+>>>>>>> 2e67a06 (最適化)
     available: false,
     accepting: true,
     pc: null,
@@ -484,10 +575,15 @@ async function startWebrtcReceiver(code) {
     heartbeat: null,
     poller: null,
     stopping: false,
+<<<<<<< HEAD
+=======
+    roomToken: null,
+>>>>>>> 2e67a06 (最適化)
   };
   session.stop = async () => {
     session.channel?.close();
     session.pc?.close();
+<<<<<<< HEAD
     await signal.close();
   };
   active = session;
@@ -497,11 +593,30 @@ async function startWebrtcReceiver(code) {
       isOfferer: false,
       sendSignal: (payload) => signal.send(payload),
       subscribe: (listener) => signal.subscribe(listener),
+=======
+    await session.signal?.close();
+  };
+  active = session;
+  try {
+    const joined = await joinRoom(code, "receiver");
+    session.roomToken = joined.token;
+    session.signal = openSignal(code, "receiver", joined.token);
+    const connected = await connectTransfer({
+      isOfferer: false,
+      sendSignal: (payload) => session.signal.send(payload),
+      subscribe: (listener) => session.signal.subscribe(listener),
+      onConnectionInfo: ({ relay }) => { if (relay) showBanner("中継経由のため速度が遅くなる場合があります", "warn"); },
+>>>>>>> 2e67a06 (最適化)
     });
     session.pc = connected.pc;
     session.channel = connected.channel;
     const auth = await authorizeReceiver(session.channel, pinRequiredInput.checked ? receivePinInput.value : "", deviceNameInput.value, {
       onRequest: (request) => promptWebrtcApproval(request),
+<<<<<<< HEAD
+=======
+      isBlocked: senderBlocked,
+      onPinFailure: recordPinFailure,
+>>>>>>> 2e67a06 (最適化)
     });
     webrtcPeerName.textContent = auth.peerName || "送信端末";
     webrtcPeerPanel.classList.remove("hidden");
@@ -527,6 +642,13 @@ async function startWebrtcReceiver(code) {
       onComplete() {
         currentFile.textContent = "すべてのファイルを受信しました";
         showBanner("WebRTCで受信が完了しました。", "ok");
+<<<<<<< HEAD
+=======
+        if (active === session) {
+          session.stopping = true;
+          deleteRoom(session.code, "receiver", session.roomToken).catch(() => {});
+        }
+>>>>>>> 2e67a06 (最適化)
       },
       onError(error) {
         if (!session.stopping) showBanner(error.message || "WebRTC受信に失敗しました。");
@@ -549,11 +671,19 @@ async function startReceiver() {
 
   try {
     const { code } = await createRoom();
+<<<<<<< HEAD
     const signal = openSignal(code, "receiver");
     signal.subscribe((payload) => {
       if (payload?.kind === "signal-error") showBanner(payload.message);
     });
     await joinRoom(code, "receiver");
+=======
+    const joined = await joinRoom(code, "receiver");
+    const signal = openSignal(code, "receiver", joined.token);
+    signal.subscribe((payload) => {
+      if (payload?.kind === "signal-error") showBanner(payload.message);
+    });
+>>>>>>> 2e67a06 (最適化)
     const session = {
       id: deviceId,
       code,
@@ -564,6 +694,10 @@ async function startReceiver() {
       channel: null,
       heartbeat: null,
       poller: null,
+<<<<<<< HEAD
+=======
+      roomToken: joined.token,
+>>>>>>> 2e67a06 (最適化)
     };
     session.stop = async () => {
       session.channel?.close();
@@ -577,8 +711,16 @@ async function startReceiver() {
     active.heartbeat = window.setInterval(() => {
       if (active?.available) publishDeviceInfo(code).catch((error) => showBanner(error.message));
     }, 15_000);
+<<<<<<< HEAD
     active.poller = window.setInterval(refreshRequests, 1500);
     refreshRequests();
+=======
+    const pollRequests = async () => {
+      await refreshRequests();
+      if (active?.available && !active.accepting) active.poller = window.setTimeout(pollRequests, document.hidden ? 10_000 : 250 + Math.floor(Math.random() * 500));
+    };
+    pollRequests();
+>>>>>>> 2e67a06 (最適化)
   } catch (error) {
     currentFile.textContent = "待機を開始できません";
     showBanner(error.message || "受信の準備に失敗しました。");
@@ -587,7 +729,12 @@ async function startReceiver() {
 
 zipDownloadButton.addEventListener("click", downloadZip);
 againButton.addEventListener("click", startReceiver);
+<<<<<<< HEAD
 window.addEventListener("pagehide", () => stopSession());
+=======
+window.addEventListener("pagehide", () => { stopSession(); cleanupOneSendTempFiles(); });
+cleanupOneSendTempFiles();
+>>>>>>> 2e67a06 (最適化)
 
 const initialWebrtcCode = new URLSearchParams(location.search).get("code") || "";
 if (initialWebrtcCode && /^\d{6}$/.test(initialWebrtcCode)) {

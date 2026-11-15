@@ -419,6 +419,15 @@ function promptForPin(required = true) {
     const onCancel = () => pinDialog.close("cancel");
     const onSubmit = (event) => {
       event.preventDefault();
+<<<<<<< HEAD
+=======
+      if (!/^\d*$/.test(pinInput.value) || required && !pinInput.value) {
+        pinInput.setCustomValidity("PINは数字のみで入力してください。");
+        pinInput.reportValidity();
+        return;
+      }
+      pinInput.setCustomValidity("");
+>>>>>>> 2e67a06 (最適化)
       pinDialog.close(event.submitter?.value || "continue");
     };
     const onClose = () => {
@@ -478,7 +487,11 @@ async function requestTransfer(device, button) {
     const deadline = Date.now() + 30_000;
     let approval = null;
     while (Date.now() < deadline && !session.cancelled) {
+<<<<<<< HEAD
       const status = await getRequestStatus(device.id, requestId);
+=======
+      const status = await getRequestStatus(device.id, requestId, session.requestSecret, true);
+>>>>>>> 2e67a06 (最適化)
       if (status.status === "accepted") {
         approval = status;
         break;
@@ -492,17 +505,29 @@ async function requestTransfer(device, button) {
     if (session.cancelled) throw new Error("接続リクエストを取り消しました。");
     if (!approval) throw new Error("受信側が30秒以内に応答しませんでした。もう一度お試しください。");
 
+<<<<<<< HEAD
     session.signal = openSignal(approval.code, "sender");
     session.signal.subscribe((payload) => {
       if (payload?.kind === "signal-error") showBanner(payload.message);
     });
     await joinRoom(approval.code, "sender");
+=======
+    const joined = await joinRoom(approval.code, "sender");
+    session.signal = openSignal(approval.code, "sender", joined.token);
+    session.signal.subscribe((payload) => {
+      if (payload?.kind === "signal-error") showBanner(payload.message);
+    });
+>>>>>>> 2e67a06 (最適化)
     if (session.cancelled) throw new Error("転送を停止しました。");
     currentFile.textContent = "安全な端末間接続を準備しています…";
     const connected = await connectTransfer({
       isOfferer: true,
       sendSignal: (payload) => session.signal.send(payload),
       subscribe: (listener) => session.signal.subscribe(listener),
+<<<<<<< HEAD
+=======
+      onConnectionInfo: ({ relay }) => { if (relay) showBanner("中継経由のため速度が遅くなる場合があります", "warn"); },
+>>>>>>> 2e67a06 (最適化)
     });
     session.pc = connected.pc;
     session.channel = connected.channel;
@@ -571,14 +596,22 @@ async function sendWebrtcTransfer() {
     },
   };
   try {
+<<<<<<< HEAD
     session.signal = openSignal(code, "sender");
+=======
+    const joined = await joinRoom(code, "sender", { name: deviceNameInput.value });
+    session.signal = openSignal(code, "sender", joined.token);
+>>>>>>> 2e67a06 (最適化)
     session.signal.subscribe((payload) => {
       if (payload?.kind === "peer-joined" && payload.role === "receiver") {
         webrtcPeerName.textContent = payload.name || "受信端末";
         webrtcPeerPanel.classList.remove("hidden");
       }
     });
+<<<<<<< HEAD
     const joined = await joinRoom(code, "sender", { name: deviceNameInput.value });
+=======
+>>>>>>> 2e67a06 (最適化)
     if (joined.peerName) {
       webrtcPeerName.textContent = joined.peerName;
       webrtcPeerPanel.classList.remove("hidden");
@@ -587,6 +620,10 @@ async function sendWebrtcTransfer() {
       isOfferer: true,
       sendSignal: (payload) => session.signal.send(payload),
       subscribe: (listener) => session.signal.subscribe(listener),
+<<<<<<< HEAD
+=======
+      onConnectionInfo: ({ relay }) => { if (relay) showBanner("中継経由のため速度が遅くなる場合があります", "warn"); },
+>>>>>>> 2e67a06 (最適化)
     });
     session.pc = connected.pc;
     session.channel = connected.channel;
@@ -738,6 +775,22 @@ showWebrtcQr?.addEventListener("click", () => {
   });
 });
 window.addEventListener("pagehide", () => active?.stop());
+<<<<<<< HEAD
 refreshDevices();
 importSharedPayload();
 window.setInterval(refreshDevices, 4000);
+=======
+let deviceRefreshTimer;
+function scheduleDeviceRefresh() {
+  clearTimeout(deviceRefreshTimer);
+  const base = document.hidden ? 10_000 : 4_000;
+  deviceRefreshTimer = window.setTimeout(async () => {
+    if (!document.hidden) await refreshDevices();
+    scheduleDeviceRefresh();
+  }, base + Math.floor(Math.random() * 700));
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshDevices(); scheduleDeviceRefresh(); });
+refreshDevices();
+importSharedPayload();
+scheduleDeviceRefresh();
+>>>>>>> 2e67a06 (最適化)

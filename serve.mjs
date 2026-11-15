@@ -12,6 +12,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = __dirname;
 const port = Number(process.env.PORT || 8080);
 const host = process.env.HOST || "0.0.0.0";
+<<<<<<< HEAD
+=======
+const blockedStaticPaths = new Set([
+  "worker.js", "serve.mjs", "package.json", "package-lock.json", "README.md",
+  "wrangler.toml", ".assetsignore", ".gitignore",
+]);
+>>>>>>> 2e67a06 (最適化)
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -119,6 +126,15 @@ const server = http.createServer(async (req, res) => {
     res.end("Forbidden");
     return;
   }
+<<<<<<< HEAD
+=======
+  const relativePath = path.relative(root, filePath);
+  if (blockedStaticPaths.has(relativePath) || relativePath.startsWith(`.vscode${path.sep}`) || relativePath.startsWith(`.wrangler${path.sep}`) || relativePath.startsWith("tests" + path.sep)) {
+    res.writeHead(404);
+    res.end("Not found");
+    return;
+  }
+>>>>>>> 2e67a06 (最適化)
 
   if (safe.endsWith("/") || !path.extname(safe)) {
     const asIndex = path.join(filePath, "index.html");

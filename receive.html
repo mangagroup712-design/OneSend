@@ -23,7 +23,13 @@
           <h2 id="settings-heading">受信設定</h2>
           <label class="device-name-field">この端末の名前<input id="device-name" class="text-input" type="text" maxlength="32" autocomplete="nickname"></label>
           <label class="pin-toggle"><input id="pin-required" type="checkbox"> 受信時にPINを必要にする</label>
+<<<<<<< HEAD
           <label id="pin-field" class="device-name-field hidden">PIN<input id="receive-pin" class="text-input" type="password" inputmode="numeric" maxlength="32" autocomplete="new-password"></label>
+=======
+          <label id="pin-field" class="device-name-field hidden">PIN<input id="receive-pin" class="text-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="32" autocomplete="new-password"></label>
+          <label class="pin-toggle"><input id="remember-pin" type="checkbox"> PINをこの端末で記憶する</label>
+          <label class="pin-toggle"><input id="list-device" type="checkbox" checked> この端末を一覧に表示する</label>
+>>>>>>> 2e67a06 (最適化)
           <p class="hint">端末名はこのブラウザーで設定します。OSの端末名はブラウザーから取得できません。</p>
         </section>
         <label class="mode-toggle"><input id="webrtc-mode" type="checkbox"><span class="toggle-track" aria-hidden="true"><span class="toggle-thumb"></span></span><span class="mode-label">WebRTCモード</span><small>部屋コードで別ネットワークから受け取る</small></label>

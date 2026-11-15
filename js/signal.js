@@ -1,4 +1,11 @@
 const ROLE = new Set(["sender", "receiver"]);
+<<<<<<< HEAD
+=======
+const ROOM_CODE_PATTERN = /^\d{6}$/;
+const TOKEN_PATTERN = /^[a-f0-9]{64}$/i;
+const DEVICE_ID_PATTERN = /^[A-Za-z0-9_-]{8,80}$/;
+const SECRET_PATTERN = /^[a-f0-9]{32,128}$/i;
+>>>>>>> 2e67a06 (最適化)
 
 async function readJson(response) {
   const data = await response.json().catch(() => ({}));
@@ -13,7 +20,11 @@ export async function createRoom() {
 }
 
 export async function joinRoom(code, role, metadata = {}) {
+<<<<<<< HEAD
   if (!ROLE.has(role)) throw new Error("役割が不正です");
+=======
+  if (!ROOM_CODE_PATTERN.test(String(code)) || !ROLE.has(role)) throw new Error("部屋コードまたは役割が不正です");
+>>>>>>> 2e67a06 (最適化)
   return readJson(await fetch(`/api/rooms/${encodeURIComponent(code)}/join`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -21,6 +32,16 @@ export async function joinRoom(code, role, metadata = {}) {
   }));
 }
 
+<<<<<<< HEAD
+=======
+export async function deleteRoom(code, role, token) {
+  if (!ROOM_CODE_PATTERN.test(String(code)) || !ROLE.has(role) || !TOKEN_PATTERN.test(token || "")) throw new Error("部屋の認証情報が不正です");
+  return readJson(await fetch(`/api/rooms/${encodeURIComponent(code)}?role=${encodeURIComponent(role)}`, {
+    method: "DELETE", headers: { Authorization: `Bearer ${token}` }, keepalive: true,
+  }));
+}
+
+>>>>>>> 2e67a06 (最適化)
 async function directoryRequest(path, options = {}) {
   return readJson(await fetch(`/api/devices${path}`, {
     cache: "no-store",
@@ -29,6 +50,10 @@ async function directoryRequest(path, options = {}) {
 }
 
 export function listDevices(excludeProfileId = "") {
+<<<<<<< HEAD
+=======
+  if (excludeProfileId && !SECRET_PATTERN.test(excludeProfileId)) throw new Error("端末プロフィールの識別情報が不正です");
+>>>>>>> 2e67a06 (最適化)
   const query = excludeProfileId ? `?excludeProfile=${encodeURIComponent(excludeProfileId)}` : "";
   return directoryRequest(query);
 }
@@ -42,6 +67,10 @@ export function publishDevice(device) {
 }
 
 export function removeDevice(deviceId, secret) {
+<<<<<<< HEAD
+=======
+  if (!DEVICE_ID_PATTERN.test(deviceId || "") || !SECRET_PATTERN.test(secret || "")) throw new Error("端末の認証情報が不正です");
+>>>>>>> 2e67a06 (最適化)
   return directoryRequest(`/${encodeURIComponent(deviceId)}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${secret}` },
@@ -50,6 +79,12 @@ export function removeDevice(deviceId, secret) {
 }
 
 export function requestDevice(deviceId, senderName, requesterSecret, metadata = {}) {
+<<<<<<< HEAD
+=======
+  if (!DEVICE_ID_PATTERN.test(deviceId || "") || !SECRET_PATTERN.test(requesterSecret || "")) {
+    throw new Error("接続要求の識別情報が不正です");
+  }
+>>>>>>> 2e67a06 (最適化)
   return directoryRequest(`/${encodeURIComponent(deviceId)}/requests`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -58,6 +93,12 @@ export function requestDevice(deviceId, senderName, requesterSecret, metadata = 
 }
 
 export function cancelRequest(deviceId, requestId, requesterSecret) {
+<<<<<<< HEAD
+=======
+  if (!DEVICE_ID_PATTERN.test(deviceId || "") || !SECRET_PATTERN.test(requesterSecret || "") || !/^[a-f0-9-]{8,80}$/i.test(requestId || "")) {
+    throw new Error("接続要求の認証情報が不正です");
+  }
+>>>>>>> 2e67a06 (最適化)
   return directoryRequest(`/${encodeURIComponent(deviceId)}/requests/${encodeURIComponent(requestId)}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${requesterSecret}`, "Content-Type": "application/json" },
@@ -65,13 +106,25 @@ export function cancelRequest(deviceId, requestId, requesterSecret) {
   });
 }
 
+<<<<<<< HEAD
 export function listRequests(deviceId, secret) {
   return directoryRequest(`/${encodeURIComponent(deviceId)}/requests`, {
+=======
+export function listRequests(deviceId, secret, wait = false) {
+  if (!DEVICE_ID_PATTERN.test(deviceId || "") || !SECRET_PATTERN.test(secret || "")) throw new Error("端末の認証情報が不正です");
+  return directoryRequest(`/${encodeURIComponent(deviceId)}/requests${wait ? "?wait=1" : ""}`, {
+>>>>>>> 2e67a06 (最適化)
     headers: { Authorization: `Bearer ${secret}` },
   });
 }
 
 export function decideRequest(deviceId, requestId, accepted, secret) {
+<<<<<<< HEAD
+=======
+  if (!DEVICE_ID_PATTERN.test(deviceId || "") || !SECRET_PATTERN.test(secret || "") || !/^[a-f0-9-]{8,80}$/i.test(requestId || "")) {
+    throw new Error("接続要求の認証情報が不正です");
+  }
+>>>>>>> 2e67a06 (最適化)
   return directoryRequest(`/${encodeURIComponent(deviceId)}/requests/${encodeURIComponent(requestId)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${secret}` },
@@ -79,11 +132,25 @@ export function decideRequest(deviceId, requestId, accepted, secret) {
   });
 }
 
+<<<<<<< HEAD
 export function getRequestStatus(deviceId, requestId) {
   return directoryRequest(`/${encodeURIComponent(deviceId)}/requests/${encodeURIComponent(requestId)}`);
 }
 
 export function openSignal(code, role) {
+=======
+export function getRequestStatus(deviceId, requestId, requesterSecret, wait = false) {
+  if (!DEVICE_ID_PATTERN.test(deviceId || "") || !SECRET_PATTERN.test(requesterSecret || "") || !/^[a-f0-9-]{8,80}$/i.test(requestId || "")) {
+    throw new Error("接続要求の認証情報が不正です");
+  }
+  return directoryRequest(`/${encodeURIComponent(deviceId)}/requests/${encodeURIComponent(requestId)}${wait ? "?wait=1" : ""}`, {
+    headers: { Authorization: `Bearer ${requesterSecret}` },
+  });
+}
+
+export function openSignal(code, role, token) {
+  if (!ROOM_CODE_PATTERN.test(String(code)) || !ROLE.has(role) || !TOKEN_PATTERN.test(token || "")) throw new Error("部屋の認証情報が不正です");
+>>>>>>> 2e67a06 (最適化)
   let after = 0;
   let closed = false;
   const pending = [];
@@ -101,7 +168,11 @@ export function openSignal(code, role) {
       try {
         const response = await fetch(
           `/api/rooms/${encodeURIComponent(code)}/poll?role=${encodeURIComponent(role)}&after=${after}`,
+<<<<<<< HEAD
           { cache: "no-store" },
+=======
+          { cache: "no-store", headers: { Authorization: `Bearer ${token}` } },
+>>>>>>> 2e67a06 (最適化)
         );
         const data = await readJson(response);
         after = data.next ?? after;
@@ -128,7 +199,11 @@ export function openSignal(code, role) {
       if (closed) return;
       const job = fetch(`/api/rooms/${encodeURIComponent(code)}/signal`, {
         method: "POST",
+<<<<<<< HEAD
         headers: { "Content-Type": "application/json" },
+=======
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+>>>>>>> 2e67a06 (最適化)
         body: JSON.stringify({ from: role, payload }),
       }).then(readJson);
       pending.push(job);

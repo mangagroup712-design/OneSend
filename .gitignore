@@ -1,2 +1,9 @@
+<<<<<<< HEAD
 desktop.ini
 node_modules/
+=======
+node_modules/
+desktop.ini
+.wrangler/
+.dev.vars
+>>>>>>> 2e67a06 (最適化)

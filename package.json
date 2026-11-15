@@ -6,7 +6,12 @@
   "description": "WebRTC browser-to-browser file transfer for Cloudflare Pages / Node.js",
   "scripts": {
     "start": "node serve.mjs",
+<<<<<<< HEAD
     "dev": "node serve.mjs"
+=======
+    "dev": "node serve.mjs",
+    "test": "node --test"
+>>>>>>> 2e67a06 (最適化)
   },
   "engines": {
     "node": ">=18"
