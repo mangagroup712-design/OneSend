@@ -13,13 +13,14 @@ async function readJson(response) {
 }
 
 export async function createRoom() {
-  return readJson(await fetch("/api/rooms", { method: "POST" }));
+  return readJson(await fetch("/api/rooms", { method: "POST", cache: "no-store" }));
 }
 
 export async function joinRoom(code, role, metadata = {}) {
   if (!ROOM_CODE_PATTERN.test(String(code)) || !ROLE.has(role)) throw new Error("部屋コードまたは役割が不正です");
   return readJson(await fetch(`/api/rooms/${encodeURIComponent(code)}/join`, {
     method: "POST",
+    cache: "no-store",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ role, name: String(metadata.name || "").slice(0, 32) }),
   }));
@@ -157,6 +158,7 @@ export function openSignal(code, role, token) {
       if (closed) return;
       const job = fetch(`/api/rooms/${encodeURIComponent(code)}/signal`, {
         method: "POST",
+        cache: "no-store",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ from: role, payload }),
       }).then(readJson);

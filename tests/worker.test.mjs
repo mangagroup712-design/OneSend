@@ -29,6 +29,47 @@ test("部屋は6桁、役割トークンを必要とし、二重参加を拒否�
   assert.equal(unauthenticatedSignal.response.status, 401);
 });
 
+test("双方の参加者間でSDPとICEシグナルを中継できる", async () => {
+  const network = `signal-${serial++}`;
+  const made = await api("/api/rooms", { method: "POST" }, network);
+  const sender = await api(`/api/rooms/${made.body.code}/join`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ role: "sender" }),
+  }, network);
+  const receiver = await api(`/api/rooms/${made.body.code}/join`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ role: "receiver" }),
+  }, network);
+  const signalHeaders = (token) => ({
+    "content-type": "application/json",
+    authorization: `Bearer ${token}`,
+  });
+  const offer = await api(`/api/rooms/${made.body.code}/signal`, {
+    method: "POST",
+    headers: signalHeaders(sender.body.token),
+    body: JSON.stringify({ from: "sender", payload: { kind: "sdp-offer", sdp: "offer" } }),
+  }, network);
+  assert.equal(offer.response.status, 200);
+  const receiverPoll = await api(`/api/rooms/${made.body.code}/poll?role=receiver&after=0`, {
+    headers: { authorization: `Bearer ${receiver.body.token}` },
+  }, network);
+  assert.equal(receiverPoll.response.status, 200);
+  assert.equal(receiverPoll.body.messages.at(-1).payload.kind, "sdp-offer");
+
+  const answer = await api(`/api/rooms/${made.body.code}/signal`, {
+    method: "POST",
+    headers: signalHeaders(receiver.body.token),
+    body: JSON.stringify({ from: "receiver", payload: { kind: "sdp-answer", sdp: "answer" } }),
+  }, network);
+  assert.equal(answer.response.status, 200);
+  const senderPoll = await api(`/api/rooms/${made.body.code}/poll?role=sender&after=0`, {
+    headers: { authorization: `Bearer ${sender.body.token}` },
+  }, network);
+  assert.equal(senderPoll.body.messages.at(-1).payload.kind, "sdp-answer");
+});
+
 test("端末一覧はネットワークごとに分離される", async () => {
   const device = { id: "device-test-123", profileId: "a".repeat(32), secret: "b".repeat(32), code: "123456", name: "端末" };
   assert.equal((await api("/api/devices", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(device) }, "net-a")).response.status, 200);

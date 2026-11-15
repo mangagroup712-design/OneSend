@@ -528,6 +528,7 @@ async function startWebrtcReceiver(code) {
     session.signal = openSignal(code, "receiver", joined.token);
     const connected = await connectTransfer({
       isOfferer: false,
+      connectTimeoutMs: 15 * 60_000,
       sendSignal: (payload) => session.signal.send(payload),
       subscribe: (listener) => session.signal.subscribe(listener),
       onConnectionInfo: ({ relay }) => { if (relay) showBanner("中継経由のため速度が遅くなる場合があります", "warn"); },

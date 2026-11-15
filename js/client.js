@@ -15,6 +15,7 @@ const progressBar = document.getElementById("progress-bar");
 const progressLabel = document.getElementById("progress-label");
 const speedLabel = document.getElementById("speed-label");
 const banner = document.getElementById("banner");
+const webrtcBanner = document.getElementById("webrtc-banner");
 const pinDialog = document.getElementById("pin-dialog");
 const pinForm = document.getElementById("pin-form");
 const pinInput = document.getElementById("pin-input");
@@ -87,9 +88,12 @@ deviceNameInput.addEventListener("change", () => {
 });
 
 const showBanner = (message, type = "error") => {
-  banner.textContent = message;
-  banner.className = `banner ${type}`;
-  banner.classList.remove("hidden");
+  const target = webrtcMode?.checked && webrtcBanner ? webrtcBanner : banner;
+  const other = target === banner ? webrtcBanner : banner;
+  target.textContent = message;
+  target.className = `banner ${type}`;
+  target.classList.remove("hidden");
+  other?.classList.add("hidden");
 };
 
 function fileParts(fileName) {
@@ -612,6 +616,12 @@ async function sendWebrtcTransfer() {
     showBanner("WebRTCで送信が完了しました。", "ok");
   } catch (error) {
     if (!session.cancelled) showBanner(error.message || "WebRTC転送に失敗しました。");
+    if (/部屋は見つからない|有効期限/.test(error.message || "")) {
+      webrtcRoomCode.value = "";
+      showWebrtcQr.disabled = true;
+      openWebrtcSend.disabled = true;
+      showBanner("部屋の有効期限が切れています。新しい部屋を作ってください。");
+    }
   } finally {
     await active?.stop();
     active = null;

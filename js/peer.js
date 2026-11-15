@@ -6,7 +6,7 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024;
 // hard limits and can reject a send even when a large fixed threshold is used.
 const SEND_QUEUE_LIMIT = 4 * 1024 * 1024;
 const ACK_EVERY = 1024 * 1024;
-const CONNECT_TIMEOUT_MS = 25_000;
+const DEFAULT_CONNECT_TIMEOUT_MS = 60_000;
 
 const ICE_SERVERS = [
   { urls: "stun:stun.l.google.com:19302" },
@@ -128,7 +128,13 @@ async function sendWithBackpressure(channel, data, byteLength, queueLimit = SEND
   }
 }
 
-export async function connectTransfer({ isOfferer, sendSignal, subscribe, onConnectionInfo }) {
+export async function connectTransfer({
+  isOfferer,
+  sendSignal,
+  subscribe,
+  onConnectionInfo,
+  connectTimeoutMs = DEFAULT_CONNECT_TIMEOUT_MS,
+}) {
   const pc = await createPeerConnection();
   const channelPromise = isOfferer
     ? Promise.resolve(pc.createDataChannel("OneSend", { ordered: true }))
@@ -138,6 +144,12 @@ export async function connectTransfer({ isOfferer, sendSignal, subscribe, onConn
 
   let applyingRemote = false;
   const pendingIce = [];
+  let signalFailure = null;
+  const sendCandidate = (candidate) => {
+    sendSignal({ kind: "ice", candidate }).catch((error) => {
+      signalFailure = error;
+    });
+  };
   const addIce = async (candidate) => {
     if (!candidate) return;
     if (!pc.remoteDescription) {
@@ -156,7 +168,7 @@ export async function connectTransfer({ isOfferer, sendSignal, subscribe, onConn
   };
 
   pc.onicecandidate = (event) => {
-    if (event.candidate) sendSignal({ kind: "ice", candidate: event.candidate.toJSON() });
+    if (event.candidate) sendCandidate(event.candidate.toJSON());
   };
 
   subscribe(async (payload) => {
@@ -189,14 +201,22 @@ export async function connectTransfer({ isOfferer, sendSignal, subscribe, onConn
     await sendSignal({ kind: "sdp-offer", sdp: offer.sdp });
   }
 
-  const channel = await Promise.race([
-    channelPromise.then(waitForChannel),
-    new Promise((_, reject) => {
-      setTimeout(() => {
-        reject(new Error("接続がタイムアウトしました。同じWi-Fiに接続し、受信側の画面を開いたままにしてください。"));
-      }, CONNECT_TIMEOUT_MS);
-    }),
-  ]);
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => {
+      reject(new Error("接続がタイムアウトしました。同じWi-Fiに接続し、受信側の画面を開いたままにしてください。"));
+    }, Math.max(1_000, connectTimeoutMs));
+  });
+  let channel;
+  try {
+    channel = await Promise.race([
+      channelPromise.then(waitForChannel),
+      timeoutPromise,
+    ]);
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+  if (signalFailure) throw new Error(`接続情報を送信できませんでした: ${signalFailure.message}`);
   channel.binaryType = "arraybuffer";
   // The selected candidate pair is available only after ICE has connected.
   window.setTimeout(async () => {
